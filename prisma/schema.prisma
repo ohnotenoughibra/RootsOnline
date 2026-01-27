@@ -1,0 +1,170 @@
+// Prisma Schema for ROA - Roots Online Academy
+// Multi-creator martial arts LMS with subscription-based access
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User roles enum
+enum Role {
+  STUDENT
+  COACH
+  ADMIN
+}
+
+// Subscription status enum
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INACTIVE
+}
+
+// Course disciplines/categories
+enum Discipline {
+  MMA
+  KICKBOXING
+  GRAPPLING
+}
+
+// Course status
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// User model - synced with Clerk
+model User {
+  id                    String             @id @default(cuid())
+  clerkId               String             @unique
+  email                 String             @unique
+  firstName             String?
+  lastName              String?
+  imageUrl              String?
+  role                  Role               @default(STUDENT)
+
+  // Stripe subscription fields
+  stripeCustomerId      String?            @unique
+  subscriptionStatus    SubscriptionStatus @default(INACTIVE)
+  subscriptionId        String?            @unique
+  subscriptionPriceId   String?
+  subscriptionEndsAt    DateTime?
+
+  // Relations
+  coursesCreated        Course[]           @relation("CourseCreator")
+  lessonProgress        LessonProgress[]
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+// Course model - created by coaches
+model Course {
+  id              String       @id @default(cuid())
+  title           String
+  slug            String       @unique
+  description     String       @db.Text
+  shortDescription String?     @db.VarChar(300)
+  coverImage      String?
+  previewVideoUrl String?      // Optional free preview video
+
+  discipline      Discipline
+  status          CourseStatus @default(DRAFT)
+  featured        Boolean      @default(false)
+
+  // Coach/Creator relation
+  coachId         String
+  coach           User         @relation("CourseCreator", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Modules within this course
+  modules         Module[]
+
+  // Timestamps
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  publishedAt     DateTime?
+
+  @@index([discipline])
+  @@index([status])
+  @@index([coachId])
+}
+
+// Module model - sections within a course
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  order       Int      @default(0)
+
+  // Course relation
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Lessons within this module
+  lessons     Lesson[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+// Lesson model - individual videos/content
+model Lesson {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?  @db.Text
+  order           Int      @default(0)
+
+  // Video fields
+  videoUrl        String?  // Cloudinary URL or external embed
+  videoPublicId   String?  // Cloudinary public ID for signed URLs
+  videoDuration   Int?     // Duration in seconds
+  videoProvider   String   @default("cloudinary") // cloudinary, vimeo, youtube
+
+  // Content flags
+  isFreePreview   Boolean  @default(false) // Allow non-subscribers to view
+  isPublished     Boolean  @default(false)
+
+  // Module relation
+  moduleId        String
+  module          Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  // Progress tracking
+  progress        LessonProgress[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([moduleId])
+}
+
+// Lesson progress tracking
+model LessonProgress {
+  id            String   @id @default(cuid())
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lessonId      String
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // Progress data
+  watchedSeconds Int      @default(0)
+  completed      Boolean  @default(false)
+  completedAt    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+}
