@@ -4,7 +4,7 @@ import type { Role, SubscriptionStatus } from "@prisma/client";
 
 // Get or create user in database from Clerk
 export async function getOrCreateDbUser() {
-  const { userId } = await auth();
+  const { userId } = auth();
 
   if (!userId) {
     return null;
@@ -41,7 +41,7 @@ export async function getOrCreateDbUser() {
 
 // Get current user with full data
 export async function getCurrentUser() {
-  const { userId } = await auth();
+  const { userId } = auth();
 
   if (!userId) {
     return null;

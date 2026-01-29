@@ -1,43 +1,26 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { authMiddleware } from "@clerk/nextjs";
 
-// Routes that require authentication
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/coach(.*)",
-  "/courses/(.*)/learn(.*)",
-  "/settings(.*)",
-  "/account(.*)",
-]);
-
-// Routes that are always public
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/courses",
-  "/courses/(.*)", // Course detail pages are public (but content may be gated)
-  "/disciplines(.*)",
-  "/pricing",
-  "/about",
-  "/contact",
-  "/api/webhooks(.*)",
-]);
-
-export default clerkMiddleware(async (auth, request) => {
-  const { userId } = await auth();
-
-  // Protect routes that require authentication
-  if (isProtectedRoute(request) && !userId) {
-    const { redirectToSignIn } = await auth();
-    return redirectToSignIn();
-  }
+export default authMiddleware({
+  // Public routes that don't require authentication
+  publicRoutes: [
+    "/",
+    "/sign-in(.*)",
+    "/sign-up(.*)",
+    "/courses",
+    "/courses/(.*)",
+    "/disciplines(.*)",
+    "/pricing",
+    "/about",
+    "/contact",
+    "/api/webhooks(.*)",
+    "/api/stripe/webhook",
+  ],
+  // Routes that can be accessed while signed out but need auth for full features
+  ignoredRoutes: [
+    "/api/stripe/webhook",
+  ],
 });
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-  ],
+  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
 };
