@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         }
 
         // Get subscription details
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription;
 
         await prisma.user.update({
           where: { id: userId },
@@ -71,7 +71,9 @@ export async function POST(request: Request) {
             subscriptionId: subscriptionId,
             subscriptionStatus: "ACTIVE",
             subscriptionPriceId: subscription.items.data[0]?.price.id,
-            subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
+            subscriptionEndsAt: subscription.current_period_end
+              ? new Date(subscription.current_period_end * 1000)
+              : null,
           },
         });
 
