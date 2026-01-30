@@ -225,11 +225,18 @@ export default async function CoachDashboardPage() {
         <div className="mx-auto max-w-2xl px-4 text-center">
           <Card className="p-8">
             <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Setup Required</h1>
-            <p className="text-muted-foreground mb-6">
+            <h1 className="text-2xl font-bold mb-2">Database Setup Required</h1>
+            <p className="text-muted-foreground mb-4">
               The database needs to be set up before you can access the coach area.
-              Please run the database setup SQL in your Neon dashboard.
             </p>
+            <div className="text-left bg-muted p-4 rounded-lg mb-6 text-sm">
+              <p className="font-medium mb-2">Setup options:</p>
+              <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+                <li>Run <code className="bg-background px-1 rounded">npm run db:push</code> to sync schema with Prisma</li>
+                <li>Or copy <code className="bg-background px-1 rounded">scripts/setup-database.sql</code> into your Neon SQL Editor</li>
+                <li>Then run <code className="bg-background px-1 rounded">npm run db:seed</code> to add sample data</li>
+              </ol>
+            </div>
             <Link href="/">
               <Button>Go Home</Button>
             </Link>
