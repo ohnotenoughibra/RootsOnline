@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST() {
   try {
-    const { userId } = await auth();
+    const { userId } = auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -45,4 +45,9 @@ export async function POST() {
       { status: 500 }
     );
   }
+}
+
+// Also allow GET for easy testing
+export async function GET() {
+  return POST();
 }
