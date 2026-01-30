@@ -1,10 +1,11 @@
 import { Suspense } from "react";
-import { Search } from "lucide-react";
+import { Search, BookOpen } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { CourseGrid } from "@/components/course/course-grid";
 import { DisciplineFilter } from "@/components/course/discipline-filter";
 import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 import type { Discipline } from "@/types";
 
 interface CoursesPageProps {
@@ -15,52 +16,57 @@ interface CoursesPageProps {
 }
 
 async function getCourses(discipline?: string, search?: string) {
-  const where: {
-    status: "PUBLISHED";
-    discipline?: Discipline;
-    OR?: Array<{
-      title?: { contains: string; mode: "insensitive" };
-      description?: { contains: string; mode: "insensitive" };
-    }>;
-  } = {
-    status: "PUBLISHED",
-  };
+  try {
+    const where: {
+      status: "PUBLISHED";
+      discipline?: Discipline;
+      OR?: Array<{
+        title?: { contains: string; mode: "insensitive" };
+        description?: { contains: string; mode: "insensitive" };
+      }>;
+    } = {
+      status: "PUBLISHED",
+    };
 
-  if (discipline && ["MMA", "KICKBOXING", "GRAPPLING"].includes(discipline)) {
-    where.discipline = discipline as Discipline;
-  }
+    if (discipline && ["MMA", "KICKBOXING", "GRAPPLING"].includes(discipline)) {
+      where.discipline = discipline as Discipline;
+    }
 
-  if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ];
-  }
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
 
-  const courses = await prisma.course.findMany({
-    where,
-    include: {
-      coach: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          imageUrl: true,
+    const courses = await prisma.course.findMany({
+      where,
+      include: {
+        coach: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            imageUrl: true,
+          },
+        },
+        _count: {
+          select: {
+            modules: true,
+          },
         },
       },
-      _count: {
-        select: {
-          modules: true,
-        },
-      },
-    },
-    orderBy: [
-      { featured: "desc" },
-      { publishedAt: "desc" },
-    ],
-  });
+      orderBy: [
+        { featured: "desc" },
+        { publishedAt: "desc" },
+      ],
+    });
 
-  return courses;
+    return courses;
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    return [];
+  }
 }
 
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {
@@ -97,13 +103,23 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
           </div>
         </div>
 
-        {/* Results count */}
-        <p className="text-sm text-muted-foreground mb-6">
-          {courses.length} course{courses.length !== 1 ? "s" : ""} found
-        </p>
-
-        {/* Course Grid */}
-        <CourseGrid courses={courses} />
+        {/* Results */}
+        {courses.length === 0 ? (
+          <Card className="p-12 text-center">
+            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold">No courses yet</h3>
+            <p className="text-muted-foreground mt-2">
+              Courses will appear here once coaches start publishing content.
+            </p>
+          </Card>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground mb-6">
+              {courses.length} course{courses.length !== 1 ? "s" : ""} found
+            </p>
+            <CourseGrid courses={courses} />
+          </>
+        )}
       </div>
     </div>
   );
