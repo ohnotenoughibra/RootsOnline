@@ -58,6 +58,7 @@ interface Lesson {
   description: string | null;
   order: number;
   videoUrl: string | null;
+  videoPublicId: string | null;
   videoDuration: number | null;
   isFreePreview: boolean;
   isPublished: boolean;
@@ -96,6 +97,12 @@ export default function EditCoursePage() {
     moduleId: string;
     title: string;
   } | null>(null);
+  const [editingLesson, setEditingLesson] = useState<{
+    moduleId: string;
+    lesson: Lesson;
+  } | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
     fetchCourse();
@@ -249,6 +256,71 @@ export default function EditCoursePage() {
     } catch (error) {
       console.error("Error updating lesson:", error);
       toast.error("Failed to update lesson");
+    }
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingLesson) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please select a video file");
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) {
+      toast.error("Video must be less than 100MB");
+      return;
+    }
+
+    setUploadingVideo(true);
+    setUploadProgress(0);
+
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      if (!cloudName) throw new Error("Cloudinary not configured");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "roa_unsigned");
+      formData.append("folder", "roa-courses");
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          setUploadProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      });
+
+      const result = await new Promise<{ secure_url: string; public_id: string; duration?: number }>((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error("Upload failed"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Upload failed"));
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+        xhr.send(formData);
+      });
+
+      // Update lesson with video URL
+      await handleUpdateLesson(editingLesson.moduleId, editingLesson.lesson.id, {
+        videoUrl: result.secure_url,
+        videoPublicId: result.public_id,
+        videoDuration: result.duration ? Math.round(result.duration) : null,
+      });
+
+      setEditingLesson(null);
+      toast.success("Video uploaded successfully!");
+    } catch (error) {
+      console.error("Video upload error:", error);
+      toast.error("Failed to upload video");
+    } finally {
+      setUploadingVideo(false);
+      setUploadProgress(0);
     }
   };
 
@@ -481,9 +553,31 @@ export default function EditCoursePage() {
                                   <span className="flex-1 text-sm">
                                     {lesson.title}
                                   </span>
+                                  {lesson.videoUrl ? (
+                                    <Badge variant="default" className="bg-green-600">
+                                      Video
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                                      No Video
+                                    </Badge>
+                                  )}
                                   {lesson.isFreePreview && (
                                     <Badge variant="secondary">Free</Badge>
                                   )}
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setEditingLesson({
+                                        moduleId: module.id,
+                                        lesson,
+                                      })
+                                    }
+                                  >
+                                    <Upload className="h-4 w-4 mr-1" />
+                                    {lesson.videoUrl ? "Replace" : "Upload"}
+                                  </Button>
                                   <div className="flex items-center gap-2">
                                     <Switch
                                       checked={lesson.isFreePreview}
@@ -578,6 +672,80 @@ export default function EditCoursePage() {
                 Cancel
               </Button>
               <Button onClick={handleAddLesson}>Add Lesson</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Lesson / Upload Video Dialog */}
+        <Dialog
+          open={!!editingLesson}
+          onOpenChange={(open) => !open && setEditingLesson(null)}
+        >
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {editingLesson?.lesson.videoUrl ? "Replace Video" : "Upload Video"}
+              </DialogTitle>
+              <DialogDescription>
+                Upload a video for: {editingLesson?.lesson.title}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              {/* Current video preview */}
+              {editingLesson?.lesson.videoUrl && (
+                <div className="space-y-2">
+                  <Label>Current Video</Label>
+                  <video
+                    src={editingLesson.lesson.videoUrl}
+                    controls
+                    className="w-full rounded-md max-h-48"
+                  />
+                </div>
+              )}
+
+              {/* Upload new video */}
+              <div className="space-y-2">
+                <Label>{editingLesson?.lesson.videoUrl ? "New Video" : "Video File"}</Label>
+                <div className="border-2 border-dashed rounded-lg p-6">
+                  {uploadingVideo ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Uploading... {uploadProgress}%
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center cursor-pointer">
+                      <Upload className="h-10 w-10 text-muted-foreground mb-3" />
+                      <span className="text-sm font-medium">Click to upload video</span>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        MP4, MOV, or WebM (max 100MB)
+                      </span>
+                      <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleVideoUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setEditingLesson(null)}
+                disabled={uploadingVideo}
+              >
+                Cancel
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
