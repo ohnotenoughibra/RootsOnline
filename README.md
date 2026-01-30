@@ -215,3 +215,4 @@ npm run db:seed      # Seed database with sample data
 ## License
 
 Private - All rights reserved.
+
