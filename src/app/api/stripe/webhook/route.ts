@@ -62,7 +62,8 @@ export async function POST(request: Request) {
         }
 
         // Get subscription details
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId) as Stripe.Subscription;
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subData = subscription as unknown as { current_period_end?: number; items: { data: Array<{ price: { id: string } }> } };
 
         await prisma.user.update({
           where: { id: userId },
@@ -70,9 +71,9 @@ export async function POST(request: Request) {
             stripeCustomerId: customerId,
             subscriptionId: subscriptionId,
             subscriptionStatus: "ACTIVE",
-            subscriptionPriceId: subscription.items.data[0]?.price.id,
-            subscriptionEndsAt: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000)
+            subscriptionPriceId: subData.items.data[0]?.price.id,
+            subscriptionEndsAt: subData.current_period_end
+              ? new Date(subData.current_period_end * 1000)
               : null,
           },
         });
@@ -82,8 +83,14 @@ export async function POST(request: Request) {
       }
 
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
+        const subscription = event.data.object;
+        const subObj = subscription as unknown as {
+          customer: string;
+          status: string;
+          current_period_end?: number;
+          items: { data: Array<{ price: { id: string } }> }
+        };
+        const customerId = subObj.customer;
 
         // Find user by Stripe customer ID
         const user = await prisma.user.findUnique({
@@ -97,7 +104,7 @@ export async function POST(request: Request) {
 
         // Map Stripe status to our status
         let status: "ACTIVE" | "CANCELED" | "PAST_DUE" | "TRIALING" | "INACTIVE";
-        switch (subscription.status) {
+        switch (subObj.status) {
           case "active":
             status = "ACTIVE";
             break;
@@ -119,8 +126,10 @@ export async function POST(request: Request) {
           where: { id: user.id },
           data: {
             subscriptionStatus: status,
-            subscriptionPriceId: subscription.items.data[0]?.price.id,
-            subscriptionEndsAt: new Date(subscription.current_period_end * 1000),
+            subscriptionPriceId: subObj.items.data[0]?.price.id,
+            subscriptionEndsAt: subObj.current_period_end
+              ? new Date(subObj.current_period_end * 1000)
+              : null,
           },
         });
 
@@ -129,8 +138,8 @@ export async function POST(request: Request) {
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
+        const subscription = event.data.object as { customer: string };
+        const customerId = subscription.customer;
 
         const user = await prisma.user.findUnique({
           where: { stripeCustomerId: customerId },
