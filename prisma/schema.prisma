@@ -61,6 +61,10 @@ model User {
   coursesCreated        Course[]           @relation("CourseCreator")
   lessonProgress        LessonProgress[]
 
+  // Training footage relations
+  trainingFootage       TrainingFootage[]  @relation("MemberFootage")
+  feedbackGiven         VideoFeedback[]    @relation("CoachFeedback")
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -167,4 +171,74 @@ model LessonProgress {
   @@unique([userId, lessonId])
   @@index([userId])
   @@index([lessonId])
+}
+
+// Training footage submission status
+enum SubmissionStatus {
+  PENDING    // Waiting for coach review
+  REVIEWED   // Coach has provided feedback
+  ARCHIVED   // Old/archived submission
+}
+
+// Training footage uploaded by members for feedback
+model TrainingFootage {
+  id              String           @id @default(cuid())
+  title           String
+  description     String?          @db.Text
+
+  // Video fields
+  videoUrl        String
+  videoPublicId   String?          // Cloudinary public ID
+  videoDuration   Int?             // Duration in seconds
+  thumbnailUrl    String?
+
+  // Category
+  discipline      Discipline
+
+  // Status
+  status          SubmissionStatus @default(PENDING)
+
+  // Member who submitted
+  memberId        String
+  member          User             @relation("MemberFootage", fields: [memberId], references: [id], onDelete: Cascade)
+
+  // Feedback from coaches
+  feedback        VideoFeedback[]
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([memberId])
+  @@index([status])
+  @@index([discipline])
+}
+
+// Coach feedback on training footage
+model VideoFeedback {
+  id              String           @id @default(cuid())
+
+  // The footage being reviewed
+  footageId       String
+  footage         TrainingFootage  @relation(fields: [footageId], references: [id], onDelete: Cascade)
+
+  // Coach providing feedback
+  coachId         String
+  coach           User             @relation("CoachFeedback", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Feedback content
+  content         String           @db.Text      // Written feedback
+  videoUrl        String?                        // Optional video response
+  videoPublicId   String?                        // Cloudinary public ID
+
+  // Timestamps for specific moments (JSON array of {time: number, note: string})
+  timestamps      String?          @db.Text      // JSON string of timestamped notes
+
+  // Rating (optional)
+  rating          Int?                           // 1-5 stars
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([footageId])
+  @@index([coachId])
 }

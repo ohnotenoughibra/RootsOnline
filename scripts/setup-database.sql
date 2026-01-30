@@ -34,6 +34,13 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Training footage submission status
+DO $$ BEGIN
+    CREATE TYPE "SubmissionStatus" AS ENUM ('PENDING', 'REVIEWED', 'ARCHIVED');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- =====================
 -- TABLES
 -- =====================
@@ -124,6 +131,40 @@ CREATE TABLE IF NOT EXISTS "LessonProgress" (
     CONSTRAINT "LessonProgress_pkey" PRIMARY KEY ("id")
 );
 
+-- Training footage uploaded by members for feedback
+CREATE TABLE IF NOT EXISTS "TrainingFootage" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "videoUrl" TEXT NOT NULL,
+    "videoPublicId" TEXT,
+    "videoDuration" INTEGER,
+    "thumbnailUrl" TEXT,
+    "discipline" "Discipline" NOT NULL,
+    "status" "SubmissionStatus" NOT NULL DEFAULT 'PENDING',
+    "memberId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TrainingFootage_pkey" PRIMARY KEY ("id")
+);
+
+-- Coach feedback on training footage
+CREATE TABLE IF NOT EXISTS "VideoFeedback" (
+    "id" TEXT NOT NULL,
+    "footageId" TEXT NOT NULL,
+    "coachId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "videoUrl" TEXT,
+    "videoPublicId" TEXT,
+    "timestamps" TEXT,
+    "rating" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "VideoFeedback_pkey" PRIMARY KEY ("id")
+);
+
 -- =====================
 -- UNIQUE CONSTRAINTS
 -- =====================
@@ -211,6 +252,30 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- TrainingFootage -> User (member)
+DO $$ BEGIN
+    ALTER TABLE "TrainingFootage" ADD CONSTRAINT "TrainingFootage_memberId_fkey"
+    FOREIGN KEY ("memberId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- VideoFeedback -> TrainingFootage
+DO $$ BEGIN
+    ALTER TABLE "VideoFeedback" ADD CONSTRAINT "VideoFeedback_footageId_fkey"
+    FOREIGN KEY ("footageId") REFERENCES "TrainingFootage"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- VideoFeedback -> User (coach)
+DO $$ BEGIN
+    ALTER TABLE "VideoFeedback" ADD CONSTRAINT "VideoFeedback_coachId_fkey"
+    FOREIGN KEY ("coachId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- =====================
 -- INDEXES
 -- =====================
@@ -222,6 +287,23 @@ CREATE INDEX IF NOT EXISTS "Module_courseId_idx" ON "Module"("courseId");
 CREATE INDEX IF NOT EXISTS "Lesson_moduleId_idx" ON "Lesson"("moduleId");
 CREATE INDEX IF NOT EXISTS "LessonProgress_userId_idx" ON "LessonProgress"("userId");
 CREATE INDEX IF NOT EXISTS "LessonProgress_lessonId_idx" ON "LessonProgress"("lessonId");
+CREATE INDEX IF NOT EXISTS "TrainingFootage_memberId_idx" ON "TrainingFootage"("memberId");
+CREATE INDEX IF NOT EXISTS "TrainingFootage_status_idx" ON "TrainingFootage"("status");
+CREATE INDEX IF NOT EXISTS "TrainingFootage_discipline_idx" ON "TrainingFootage"("discipline");
+CREATE INDEX IF NOT EXISTS "VideoFeedback_footageId_idx" ON "VideoFeedback"("footageId");
+CREATE INDEX IF NOT EXISTS "VideoFeedback_coachId_idx" ON "VideoFeedback"("coachId");
+
+-- =====================
+-- DISABLE ROW LEVEL SECURITY
+-- =====================
+
+ALTER TABLE "User" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Course" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Module" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Lesson" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "LessonProgress" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "TrainingFootage" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "VideoFeedback" DISABLE ROW LEVEL SECURITY;
 
 -- =====================
 -- TRIGGER FOR updatedAt
@@ -272,6 +354,20 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+DO $$ BEGIN
+    CREATE TRIGGER update_training_footage_updated_at BEFORE UPDATE ON "TrainingFootage"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TRIGGER update_video_feedback_updated_at BEFORE UPDATE ON "VideoFeedback"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- =====================
 -- SUCCESS MESSAGE
 -- =====================
@@ -279,6 +375,5 @@ END $$;
 DO $$
 BEGIN
     RAISE NOTICE 'ROA Database setup completed successfully!';
-    RAISE NOTICE 'Tables created: User, Course, Module, Lesson, LessonProgress';
-    RAISE NOTICE 'You can now run the seed script: npm run db:seed';
+    RAISE NOTICE 'Tables created: User, Course, Module, Lesson, LessonProgress, TrainingFootage, VideoFeedback';
 END $$;
