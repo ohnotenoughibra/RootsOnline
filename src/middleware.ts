@@ -1,26 +1,12 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default authMiddleware({
-  // Public routes that don't require authentication
-  publicRoutes: [
-    "/",
-    "/sign-in(.*)",
-    "/sign-up(.*)",
-    "/courses",
-    "/courses/(.*)",
-    "/disciplines(.*)",
-    "/pricing",
-    "/about",
-    "/contact",
-    "/api/webhooks(.*)",
-    "/api/stripe/webhook",
-  ],
-  // Routes that can be accessed while signed out but need auth for full features
-  ignoredRoutes: [
-    "/api/stripe/webhook",
-  ],
-});
+export default clerkMiddleware();
 
 export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
 };
