@@ -21,6 +21,7 @@ import {
 export default function UploadFootagePage() {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
@@ -53,28 +54,50 @@ export default function UploadFootagePage() {
     setVideoPreview(URL.createObjectURL(file));
     setError("");
 
-    // Upload to Cloudinary
+    // Upload directly to Cloudinary (bypasses Vercel's 4.5MB limit)
     setIsUploading(true);
+    setUploadProgress(0);
+
     try {
-      const uploadFormData = new FormData();
-      uploadFormData.append("file", file);
-      uploadFormData.append("type", "video");
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: uploadFormData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Upload failed");
+      if (!cloudName) {
+        throw new Error("Cloudinary is not configured");
       }
 
-      const data = await response.json();
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("upload_preset", "roa_unsigned");
+      uploadFormData.append("folder", "roa-footage");
+
+      const xhr = new XMLHttpRequest();
+
+      // Track upload progress
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const progress = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(progress);
+        }
+      });
+
+      const result = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(JSON.parse(xhr.responseText));
+          } else {
+            reject(new Error("Upload failed"));
+          }
+        };
+        xhr.onerror = () => reject(new Error("Upload failed"));
+
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`);
+        xhr.send(uploadFormData);
+      });
+
       setFormData((prev) => ({
         ...prev,
-        videoUrl: data.url,
-        videoPublicId: data.publicId,
+        videoUrl: result.secure_url,
+        videoPublicId: result.public_id,
       }));
     } catch (err) {
       console.error("Upload error:", err);
@@ -83,6 +106,7 @@ export default function UploadFootagePage() {
       setVideoPreview(null);
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -161,9 +185,17 @@ export default function UploadFootagePage() {
                         className="w-full rounded-md max-h-64"
                       />
                       {isUploading && (
-                        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Uploading video...
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Uploading video... {uploadProgress}%
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
                         </div>
                       )}
                       {formData.videoUrl && (
