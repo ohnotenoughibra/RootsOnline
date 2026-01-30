@@ -82,13 +82,26 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### 3. Database Setup
 
+**Option A: Using Prisma (recommended)**
+
 Push the schema to your database:
 
 ```bash
 npm run db:push
 ```
 
-Seed sample data (optional):
+**Option B: Using SQL directly (Neon)**
+
+If you're using Neon and prefer to run SQL directly:
+
+1. Open your Neon dashboard
+2. Go to the SQL Editor
+3. Copy and paste the contents of `scripts/setup-database.sql`
+4. Run the SQL
+
+**Seed sample data (optional)**
+
+After setting up the tables, seed with demo courses:
 
 ```bash
 npm run db:seed
