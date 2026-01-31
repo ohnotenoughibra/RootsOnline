@@ -113,27 +113,64 @@ export default function LearnPage() {
   const handleProgress = async (seconds: number) => {
     if (!currentLesson) return;
 
-    // Update progress in database (debounced)
-    // TODO: Implement progress tracking
+    // Save progress to database
+    try {
+      await fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonId: currentLesson.id,
+          watchedSeconds: seconds,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving progress:", error);
+    }
   };
 
   const handleComplete = async () => {
     if (!currentLesson) return;
 
     // Mark lesson as complete
-    // TODO: Implement completion tracking
+    try {
+      await fetch("/api/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonId: currentLesson.id,
+          completed: true,
+        }),
+      });
+    } catch (error) {
+      console.error("Error marking complete:", error);
+    }
+  };
 
-    // Auto-advance to next lesson
-    if (course) {
-      const allLessons = course.modules.flatMap((m) => m.lessons);
-      const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
-      const nextLesson = allLessons[currentIndex + 1];
+  const handleNextLesson = () => {
+    if (!course || !currentLesson) return;
 
-      if (nextLesson) {
+    const allLessons = course.modules.flatMap((m) => m.lessons);
+    const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
+    const nextLesson = allLessons[currentIndex + 1];
+
+    if (nextLesson) {
+      const isNextAccessible = nextLesson.isFreePreview || isSubscribed;
+      if (isNextAccessible) {
         handleLessonClick(nextLesson.id);
       }
     }
   };
+
+  // Check if there's a next lesson
+  const hasNextLesson = () => {
+    if (!course || !currentLesson) return false;
+    const allLessons = course.modules.flatMap((m) => m.lessons);
+    const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
+    const nextLesson = allLessons[currentIndex + 1];
+    return nextLesson && (nextLesson.isFreePreview || isSubscribed);
+  };
+
+  const isSubscribed = hasActiveSubscription();
 
   if (loading || userLoading) {
     return (
@@ -147,7 +184,6 @@ export default function LearnPage() {
     return null;
   }
 
-  const isSubscribed = hasActiveSubscription();
   const canWatch = currentLesson?.isFreePreview || isSubscribed;
 
   return (
@@ -177,8 +213,10 @@ export default function LearnPage() {
           ) : canWatch && videoUrl ? (
             <VideoPlayer
               src={videoUrl}
+              title={currentLesson?.title}
               onProgress={handleProgress}
               onComplete={handleComplete}
+              onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
             />
           ) : (
             <LockedVideo />
