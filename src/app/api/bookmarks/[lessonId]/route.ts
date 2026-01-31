@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 
-// GET bookmark status for a lesson
+// GET bookmarks for a lesson
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ lessonId: string }> }
@@ -24,16 +24,22 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const bookmark = await prisma.bookmark.findUnique({
+    // Get all bookmarks for this lesson (including timestamp bookmarks)
+    const bookmarks = await prisma.bookmark.findMany({
       where: {
-        userId_lessonId: {
-          userId: user.id,
-          lessonId,
-        },
+        userId: user.id,
+        lessonId,
       },
+      orderBy: [
+        { timestamp: { sort: "asc", nulls: "first" } },
+        { createdAt: "desc" },
+      ],
     });
 
-    return NextResponse.json({ bookmarked: !!bookmark });
+    return NextResponse.json({
+      bookmarked: bookmarks.length > 0,
+      bookmarks,
+    });
   } catch (error) {
     console.error("Error checking bookmark:", error);
     return NextResponse.json(
@@ -43,7 +49,7 @@ export async function GET(
   }
 }
 
-// DELETE - remove a bookmark
+// DELETE - remove all bookmarks for a lesson (or specific bookmark by ID)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ lessonId: string }> }
@@ -51,6 +57,8 @@ export async function DELETE(
   try {
     const { userId: clerkId } = await auth();
     const { lessonId } = await params;
+    const { searchParams } = new URL(request.url);
+    const bookmarkId = searchParams.get("id");
 
     if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,14 +72,24 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    await prisma.bookmark.delete({
-      where: {
-        userId_lessonId: {
+    if (bookmarkId) {
+      // Delete specific bookmark by ID
+      await prisma.bookmark.deleteMany({
+        where: {
+          id: bookmarkId,
           userId: user.id,
           lessonId,
         },
-      },
-    });
+      });
+    } else {
+      // Delete all bookmarks for this lesson
+      await prisma.bookmark.deleteMany({
+        where: {
+          userId: user.id,
+          lessonId,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
