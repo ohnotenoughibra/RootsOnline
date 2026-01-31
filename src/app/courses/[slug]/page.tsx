@@ -250,12 +250,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
                   <div className="mt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span>Weekly</span>
-                      <span className="font-medium">€5/week</span>
+                      <span>Monthly</span>
+                      <span className="font-medium">€19.99/month</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span>Yearly</span>
-                      <span className="font-medium">€99/year</span>
+                      <span className="font-medium">€199/year</span>
                     </div>
                   </div>
 

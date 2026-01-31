@@ -9,12 +9,12 @@ export const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 export const SUBSCRIPTION_PLANS = {
-  weekly: {
-    name: "Weekly",
-    price: 5,
+  monthly: {
+    name: "Monthly",
+    price: 19.99,
     currency: "EUR",
-    priceId: process.env.STRIPE_WEEKLY_PRICE_ID || "",
-    interval: "week" as const,
+    priceId: process.env.STRIPE_MONTHLY_PRICE_ID || "",
+    interval: "month" as const,
     description: "Full access, cancel anytime",
     features: [
       "All courses & tutorials",
@@ -26,15 +26,15 @@ export const SUBSCRIPTION_PLANS = {
   },
   annual: {
     name: "Annual",
-    price: 99,
+    price: 199,
     currency: "EUR",
     priceId: process.env.STRIPE_ANNUAL_PRICE_ID || "",
     interval: "year" as const,
-    description: "Best value - save over 60%",
-    savings: 161,
+    description: "Best value - save 17%",
+    savings: 40,
     features: [
-      "Everything in Weekly",
-      "Save €161 vs weekly",
+      "Everything in Monthly",
+      "Save €40 vs monthly",
       "Priority feedback",
       "Early access to new courses",
       "Exclusive Q&A sessions",

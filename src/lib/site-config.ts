@@ -28,8 +28,8 @@ export const siteConfig = {
   ],
   authors: [{ name: "ROA", url: "https://rootsonline.academy" }],
   pricing: {
-    weekly: { amount: 5, currency: "EUR", label: "€5/week" },
-    annual: { amount: 99, currency: "EUR", label: "€99/year" },
+    monthly: { amount: 19.99, currency: "EUR", label: "€19.99/month" },
+    annual: { amount: 199, currency: "EUR", label: "€199/year" },
   },
   support: {
     email: "support@rootsonline.academy",

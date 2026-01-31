@@ -163,7 +163,7 @@ export default function AdminSubscriptionsPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="annual">Annual (€99)</SelectItem>
+                          <SelectItem value="annual">Annual (€199)</SelectItem>
                           <SelectItem value="monthly">1 Month</SelectItem>
                           <SelectItem value="3months">3 Months</SelectItem>
                           <SelectItem value="6months">6 Months</SelectItem>

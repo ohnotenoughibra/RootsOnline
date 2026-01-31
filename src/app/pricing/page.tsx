@@ -19,11 +19,11 @@ import {
 
 const plans = [
   {
-    id: "weekly",
-    name: "Weekly",
-    price: 5,
+    id: "monthly",
+    name: "Monthly",
+    price: 19.99,
     currency: "€",
-    interval: "week",
+    interval: "month",
     description: "Full access, cancel anytime",
     features: [
       "Unlimited access to all courses",
@@ -37,15 +37,15 @@ const plans = [
   {
     id: "annual",
     name: "Annual",
-    price: 99,
+    price: 199,
     currency: "€",
     interval: "year",
-    description: "Best value - save over 60%",
+    description: "Best value - save 17%",
     popular: true,
-    savings: "Save €161",
+    savings: "Save €40",
     features: [
-      "Everything in Weekly",
-      "Only €1.90/week (save 60%+)",
+      "Everything in Monthly",
+      "Only €16.58/month (save 17%)",
       "Priority feedback from coaches",
       "Early access to new courses",
       "Exclusive Q&A sessions",
@@ -99,14 +99,14 @@ export default function PricingPage() {
         <div className="text-center mb-16">
           <Badge className="mb-4" variant="secondary">
             <Gift className="h-3 w-3 mr-1" />
-            Limited Time: 60%+ off Annual Plan
+            Save 17% with Annual Plan
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Train Like a Champion
           </h1>
           <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
             Get unlimited access to world-class martial arts instruction.
-            Start for just €5/week - cancel anytime.
+            Start for just €19.99/month - cancel anytime.
           </p>
         </div>
 
@@ -164,9 +164,9 @@ export default function PricingPage() {
                     Processing...
                   </>
                 ) : plan.popular ? (
-                  "Get Annual - Save 60%"
+                  "Get Annual - Save 17%"
                 ) : (
-                  "Start Weekly"
+                  "Start Monthly"
                 )}
               </Button>
             </Card>
@@ -176,9 +176,9 @@ export default function PricingPage() {
         {/* Comparison */}
         <div className="mt-12 text-center">
           <div className="inline-flex items-center gap-8 text-sm text-muted-foreground">
-            <span>Weekly: €5 × 52 = <strong className="text-foreground">€260/year</strong></span>
+            <span>Monthly: €19.99 × 12 = <strong className="text-foreground">€240/year</strong></span>
             <span className="text-primary font-semibold">vs</span>
-            <span>Annual: <strong className="text-foreground">€99/year</strong> (save €161)</span>
+            <span>Annual: <strong className="text-foreground">€199/year</strong> (save €40)</span>
           </div>
         </div>
 
@@ -218,7 +218,7 @@ export default function PricingPage() {
               <div className="bg-muted p-4 rounded-lg space-y-2 font-mono text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Amount:</span>
-                  <span className="font-bold">€99.00</span>
+                  <span className="font-bold">€199.00</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bank:</span>
@@ -245,7 +245,7 @@ export default function PricingPage() {
                 <ul className="list-disc pl-4 space-y-1">
                   <li>Include your reference code in the payment description</li>
                   <li>Activation within 24-48 hours after payment received</li>
-                  <li>Annual subscription only (€99/year)</li>
+                  <li>Annual subscription only (€199/year)</li>
                   <li>Email confirmation sent after activation</li>
                 </ul>
               </div>
@@ -270,15 +270,15 @@ export default function PricingPage() {
             <div>
               <h3 className="font-semibold">Can I really cancel anytime?</h3>
               <p className="mt-2 text-muted-foreground">
-                Absolutely! With the weekly plan, you can cancel any time with no commitment.
+                Absolutely! With the monthly plan, you can cancel any time with no commitment.
                 You&apos;ll keep access until your current period ends.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Why is annual so much cheaper?</h3>
+              <h3 className="font-semibold">Why is annual cheaper?</h3>
               <p className="mt-2 text-muted-foreground">
-                We reward commitment! Annual members save over 60% compared to weekly billing.
+                We reward commitment! Annual members save 17% compared to monthly billing.
                 It&apos;s our way of thanking dedicated students.
               </p>
             </div>
@@ -300,9 +300,9 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <h3 className="font-semibold">Can I upgrade from weekly to annual?</h3>
+              <h3 className="font-semibold">Can I upgrade from monthly to annual?</h3>
               <p className="mt-2 text-muted-foreground">
-                Yes! You can upgrade anytime. We&apos;ll prorate your remaining weekly balance
+                Yes! You can upgrade anytime. We&apos;ll prorate your remaining monthly balance
                 towards your annual subscription.
               </p>
             </div>

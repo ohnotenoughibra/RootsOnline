@@ -242,7 +242,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Start Training for €5/week
+              Start Training for €19.99/month
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Full access to all courses. Cancel anytime - no commitment.
@@ -250,13 +250,13 @@ export default function HomePage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-            {/* Weekly Plan */}
+            {/* Monthly Plan */}
             <Card className="p-8">
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Weekly</h3>
+                <h3 className="text-lg font-semibold">Monthly</h3>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">€5</span>
-                  <span className="text-muted-foreground">/week</span>
+                  <span className="text-4xl font-bold">€19.99</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Full access, cancel anytime
@@ -278,7 +278,7 @@ export default function HomePage() {
               </ul>
               <Link href="/pricing" className="block mt-8">
                 <Button className="w-full" variant="outline">
-                  Start Weekly
+                  Start Monthly
                 </Button>
               </Link>
             </Card>
@@ -286,22 +286,22 @@ export default function HomePage() {
             {/* Annual Plan */}
             <Card className="p-8 border-primary relative">
               <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
-                Save 60%+
+                Save 17%
               </Badge>
               <div className="text-center">
                 <h3 className="text-lg font-semibold">Annual</h3>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">€99</span>
+                  <span className="text-4xl font-bold">€199</span>
                   <span className="text-muted-foreground">/year</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Only €1.90/week - save €161
+                  Only €16.58/month - save €40
                 </p>
               </div>
               <ul className="mt-8 space-y-3">
                 {[
-                  "Everything in Weekly",
-                  "Save over 60%",
+                  "Everything in Monthly",
+                  "Save 17%",
                   "Priority coach feedback",
                   "Early access to new courses",
                   "Course certificates",
@@ -313,7 +313,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <Link href="/pricing" className="block mt-8">
-                <Button className="w-full">Get Annual - Save 60%</Button>
+                <Button className="w-full">Get Annual - Save 17%</Button>
               </Link>
             </Card>
           </div>
