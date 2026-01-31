@@ -34,6 +34,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   hasActiveSubscription: () => {
     const { user } = get();
     if (!user) return false;
+    // Coaches and admins always have full access
+    const privilegedRoles: Role[] = ["COACH", "ADMIN"];
+    if (privilegedRoles.includes(user.role)) {
+      return true;
+    }
     const activeStatuses: SubscriptionStatus[] = ["ACTIVE", "TRIALING"];
     return activeStatuses.includes(user.subscriptionStatus);
   },

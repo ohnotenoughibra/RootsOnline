@@ -54,12 +54,18 @@ export async function getCurrentUser() {
   return user;
 }
 
-// Check if user has active subscription
+// Check if user has active subscription (or is a coach/admin who gets free access)
 export async function hasActiveSubscription(): Promise<boolean> {
   const user = await getCurrentUser();
 
   if (!user) {
     return false;
+  }
+
+  // Coaches and admins always have full access
+  const privilegedRoles: Role[] = ["COACH", "ADMIN"];
+  if (privilegedRoles.includes(user.role)) {
+    return true;
   }
 
   const activeStatuses: SubscriptionStatus[] = ["ACTIVE", "TRIALING"];
