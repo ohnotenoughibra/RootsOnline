@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Award, Loader2, Download, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,6 +55,100 @@ export default function CertificatesPage() {
     const url = `${window.location.origin}/certificates/${cert.certificateNumber}`;
     navigator.clipboard.writeText(url);
     toast.success("Certificate link copied to clipboard!");
+  }
+
+  function downloadCertificate(cert: Certificate) {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Background
+    doc.setFillColor(250, 250, 250);
+    doc.rect(0, 0, pageWidth, pageHeight, "F");
+
+    // Border
+    doc.setDrawColor(59, 130, 246);
+    doc.setLineWidth(2);
+    doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+
+    // Inner border
+    doc.setLineWidth(0.5);
+    doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
+
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(36);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Certificate of Completion", pageWidth / 2, 50, { align: "center" });
+
+    // Subtitle
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(14);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Roots Online Academy", pageWidth / 2, 62, { align: "center" });
+
+    // Decorative line
+    doc.setDrawColor(59, 130, 246);
+    doc.setLineWidth(1);
+    doc.line(pageWidth / 2 - 50, 70, pageWidth / 2 + 50, 70);
+
+    // "This certifies that" text
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 80);
+    doc.text("This certifies that", pageWidth / 2, 85, { align: "center" });
+
+    // Student name placeholder
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Student", pageWidth / 2, 100, { align: "center" });
+
+    // "has successfully completed" text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 80);
+    doc.text("has successfully completed", pageWidth / 2, 115, { align: "center" });
+
+    // Course title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(59, 130, 246);
+    doc.text(cert.course.title, pageWidth / 2, 130, { align: "center" });
+
+    // Instructor
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(80, 80, 80);
+    doc.text(
+      `Instructed by ${cert.course.coach.firstName} ${cert.course.coach.lastName}`,
+      pageWidth / 2,
+      145,
+      { align: "center" }
+    );
+
+    // Date
+    const completedDate = new Date(cert.completedAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    doc.text(`Completed on ${completedDate}`, pageWidth / 2, 160, { align: "center" });
+
+    // Certificate number
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Certificate ID: ${cert.certificateNumber}`, pageWidth / 2, pageHeight - 25, {
+      align: "center",
+    });
+
+    // Save PDF
+    doc.save(`certificate-${cert.certificateNumber}.pdf`);
+    toast.success("Certificate downloaded!");
   }
 
   if (loading) {
@@ -125,7 +220,12 @@ export default function CertificatesPage() {
                       <Share2 className="h-4 w-4 mr-1" />
                       Share
                     </Button>
-                    <Button size="sm" variant="default" className="flex-1" disabled>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      className="flex-1"
+                      onClick={() => downloadCertificate(cert)}
+                    >
                       <Download className="h-4 w-4 mr-1" />
                       PDF
                     </Button>

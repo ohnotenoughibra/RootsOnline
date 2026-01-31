@@ -79,7 +79,7 @@ export async function GET() {
 
     return NextResponse.json({
       referralCode: referral.referralCode,
-      referralLink: `${process.env.NEXT_PUBLIC_APP_URL || ""}/signup?ref=${referral.referralCode}`,
+      referralLink: `${process.env.NEXT_PUBLIC_APP_URL || ""}/sign-up?ref=${referral.referralCode}`,
       successfulReferrals: successfulReferrals.length,
       pendingReferrals: pendingReferrals.length,
       totalEarned,

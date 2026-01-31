@@ -3,11 +3,22 @@ import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 import { createPortalSession, isStripeConfigured } from "@/lib/stripe";
+import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST() {
   try {
+    // Rate limit: 10 requests per minute per IP
+    const ip = await getClientIp();
+    const rateLimitResult = await rateLimit(`portal:${ip}`, RATE_LIMITS.strict);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     if (!isStripeConfigured()) {
       return NextResponse.json(
         { error: "Stripe is not configured" },

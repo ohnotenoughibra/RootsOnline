@@ -223,15 +223,15 @@ export default function PricingPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bank:</span>
-                  <span>Your Bank Name</span>
+                  <span>{process.env.NEXT_PUBLIC_SEPA_BANK_NAME || "Bank Name"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">IBAN:</span>
-                  <span>DE89 3704 0044 0532 0130 00</span>
+                  <span>{process.env.NEXT_PUBLIC_SEPA_IBAN || "Contact support"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">BIC:</span>
-                  <span>COBADEFFXXX</span>
+                  <span>{process.env.NEXT_PUBLIC_SEPA_BIC || "Contact support"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Reference:</span>

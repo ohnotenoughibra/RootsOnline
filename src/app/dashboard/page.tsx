@@ -53,6 +53,53 @@ export default async function DashboardPage() {
     ).values()
   );
 
+  // Calculate progress for each course (batch queries to avoid N+1)
+  const courseIds = coursesInProgress.map((c) => c.id);
+
+  // Get courses with lesson counts using a single query
+  const coursesWithCounts = await prisma.course.findMany({
+    where: { id: { in: courseIds } },
+    include: {
+      modules: {
+        include: {
+          _count: { select: { lessons: true } },
+        },
+      },
+    },
+  });
+
+  // Get all completed lessons for user in these courses (single query)
+  const completedProgress = await prisma.lessonProgress.findMany({
+    where: {
+      userId: user.id,
+      completed: true,
+      lesson: { module: { courseId: { in: courseIds } } },
+    },
+    select: {
+      lesson: {
+        select: { module: { select: { courseId: true } } },
+      },
+    },
+  });
+
+  // Build progress map
+  const courseProgressMap = new Map<string, { completed: number; total: number }>();
+
+  // Calculate totals
+  for (const course of coursesWithCounts) {
+    const totalLessons = course.modules.reduce((sum, m) => sum + m._count.lessons, 0);
+    courseProgressMap.set(course.id, { completed: 0, total: totalLessons });
+  }
+
+  // Count completed per course
+  for (const progress of completedProgress) {
+    const courseId = progress.lesson.module.courseId;
+    const current = courseProgressMap.get(courseId);
+    if (current) {
+      current.completed += 1;
+    }
+  }
+
   // Calculate stats
   const completedLessons = lessonProgress.filter((p) => p.completed).length;
   const totalWatchTime = lessonProgress.reduce(
@@ -246,6 +293,11 @@ export default async function DashboardPage() {
                   | "kickboxing"
                   | "grappling";
 
+                const progress = courseProgressMap.get(course.id);
+                const progressPercent = progress && progress.total > 0
+                  ? Math.round((progress.completed / progress.total) * 100)
+                  : 0;
+
                 return (
                   <Card key={course.id} className="overflow-hidden">
                     <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 relative">
@@ -264,13 +316,13 @@ export default async function DashboardPage() {
                         {course.coach.firstName} {course.coach.lastName}
                       </p>
 
-                      {/* Progress bar placeholder */}
+                      {/* Progress bar */}
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-muted-foreground mb-1">
                           <span>Progress</span>
-                          <span>0%</span>
+                          <span>{progressPercent}%</span>
                         </div>
-                        <Progress value={0} className="h-2" />
+                        <Progress value={progressPercent} className="h-2" />
                       </div>
 
                       <Link
@@ -278,7 +330,7 @@ export default async function DashboardPage() {
                         className="block mt-4"
                       >
                         <Button className="w-full" size="sm">
-                          Continue
+                          {progressPercent === 100 ? "Review" : "Continue"}
                         </Button>
                       </Link>
                     </CardContent>

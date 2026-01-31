@@ -49,8 +49,3 @@ export async function POST() {
     );
   }
 }
-
-// Also allow GET for easy testing
-export async function GET() {
-  return POST();
-}
