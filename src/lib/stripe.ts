@@ -1,58 +1,168 @@
-// Stripe is disabled for now
-// To enable, add STRIPE_SECRET_KEY to your environment variables
+import Stripe from "stripe";
 
-export const stripe = null;
+// Initialize Stripe only if secret key is available
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2024-11-20.acacia",
+      typescript: true,
+    })
+  : null;
 
 export const SUBSCRIPTION_PLANS = {
   monthly: {
     name: "Monthly",
     price: 29,
-    priceId: "",
+    priceId: process.env.STRIPE_MONTHLY_PRICE_ID || "",
     interval: "month" as const,
-    description: "Perfect for trying out the platform",
+    description: "Full access, cancel anytime",
+    features: [
+      "All courses & tutorials",
+      "New content weekly",
+      "Training footage feedback",
+      "Mobile & desktop access",
+    ],
   },
-  yearly: {
-    name: "Yearly",
+  annual: {
+    name: "Annual",
     price: 249,
-    priceId: "",
+    priceId: process.env.STRIPE_ANNUAL_PRICE_ID || "",
     interval: "year" as const,
-    description: "Best value - save over $100/year",
+    description: "Best value - save $99/year",
     savings: 99,
+    features: [
+      "Everything in Monthly",
+      "Save $99 vs monthly",
+      "Priority feedback",
+      "Early access to new courses",
+    ],
+  },
+  lifetime: {
+    name: "Lifetime",
+    price: 499,
+    priceId: process.env.STRIPE_LIFETIME_PRICE_ID || "",
+    interval: "one_time" as const,
+    description: "One-time payment, forever access",
+    features: [
+      "Everything in Annual",
+      "Never pay again",
+      "Founding member badge",
+      "Direct coach access",
+    ],
   },
 } as const;
 
 export type PlanType = keyof typeof SUBSCRIPTION_PLANS;
 
-// Stub functions - will work when Stripe is enabled
-export async function createCheckoutSession(_params: {
+export function isStripeConfigured(): boolean {
+  return !!stripe;
+}
+
+export async function createCheckoutSession(params: {
   customerId?: string;
   priceId: string;
   userId: string;
+  email: string;
   successUrl: string;
   cancelUrl: string;
+  isLifetime?: boolean;
 }) {
-  throw new Error("Stripe is not configured yet");
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    customer: params.customerId,
+    customer_email: params.customerId ? undefined : params.email,
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price: params.priceId,
+        quantity: 1,
+      },
+    ],
+    mode: params.isLifetime ? "payment" : "subscription",
+    success_url: params.successUrl,
+    cancel_url: params.cancelUrl,
+    metadata: {
+      userId: params.userId,
+    },
+    allow_promotion_codes: true,
+  };
+
+  const session = await stripe.checkout.sessions.create(sessionParams);
+  return session;
 }
 
-export async function getOrCreateStripeCustomer(_params: {
+export async function getOrCreateStripeCustomer(params: {
   email: string;
   userId: string;
   name?: string;
-}) {
-  throw new Error("Stripe is not configured yet");
+  existingCustomerId?: string | null;
+}): Promise<string> {
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  // If customer already exists, return their ID
+  if (params.existingCustomerId) {
+    return params.existingCustomerId;
+  }
+
+  // Check if customer exists by email
+  const existingCustomers = await stripe.customers.list({
+    email: params.email,
+    limit: 1,
+  });
+
+  if (existingCustomers.data.length > 0) {
+    return existingCustomers.data[0].id;
+  }
+
+  // Create new customer
+  const customer = await stripe.customers.create({
+    email: params.email,
+    name: params.name,
+    metadata: {
+      userId: params.userId,
+    },
+  });
+
+  return customer.id;
 }
 
-export async function createPortalSession(_params: {
+export async function createPortalSession(params: {
   customerId: string;
   returnUrl: string;
 }) {
-  throw new Error("Stripe is not configured yet");
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: params.customerId,
+    return_url: params.returnUrl,
+  });
+
+  return session;
 }
 
-export async function cancelSubscription(_subscriptionId: string) {
-  throw new Error("Stripe is not configured yet");
+export async function cancelSubscription(subscriptionId: string) {
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: true,
+  });
+
+  return subscription;
 }
 
-export async function reactivateSubscription(_subscriptionId: string) {
-  throw new Error("Stripe is not configured yet");
+export async function reactivateSubscription(subscriptionId: string) {
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  const subscription = await stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: false,
+  });
+
+  return subscription;
+}
+
+export async function getSubscription(subscriptionId: string) {
+  if (!stripe) throw new Error("Stripe is not configured");
+
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  return subscription;
 }

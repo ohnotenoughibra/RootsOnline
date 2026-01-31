@@ -1,9 +1,88 @@
 import { NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
-// Stripe checkout is disabled for now
-export async function POST() {
-  return NextResponse.json(
-    { error: "Payments coming soon! Stripe is not configured yet." },
-    { status: 503 }
-  );
+import { prisma } from "@/lib/prisma";
+import {
+  createCheckoutSession,
+  getOrCreateStripeCustomer,
+  isStripeConfigured,
+  SUBSCRIPTION_PLANS,
+  PlanType,
+} from "@/lib/stripe";
+
+export const dynamic = "force-dynamic";
+
+export async function POST(request: Request) {
+  try {
+    if (!isStripeConfigured()) {
+      return NextResponse.json(
+        { error: "Stripe is not configured. Add STRIPE_SECRET_KEY to enable payments." },
+        { status: 503 }
+      );
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await currentUser();
+    if (!user?.emailAddresses[0]?.emailAddress) {
+      return NextResponse.json({ error: "No email found" }, { status: 400 });
+    }
+
+    const { plan } = await request.json();
+
+    if (!plan || !SUBSCRIPTION_PLANS[plan as PlanType]) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    const selectedPlan = SUBSCRIPTION_PLANS[plan as PlanType];
+    const email = user.emailAddresses[0].emailAddress;
+
+    // Get or create database user
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!dbUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Get or create Stripe customer
+    const customerId = await getOrCreateStripeCustomer({
+      email,
+      userId: dbUser.id,
+      name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      existingCustomerId: dbUser.stripeCustomerId,
+    });
+
+    // Update user with Stripe customer ID if new
+    if (!dbUser.stripeCustomerId) {
+      await prisma.user.update({
+        where: { id: dbUser.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    // Create checkout session
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const session = await createCheckoutSession({
+      customerId,
+      priceId: selectedPlan.priceId,
+      userId: dbUser.id,
+      email,
+      successUrl: `${baseUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${baseUrl}/pricing`,
+      isLifetime: plan === "lifetime",
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    return NextResponse.json(
+      { error: "Failed to create checkout session" },
+      { status: 500 }
+    );
+  }
 }

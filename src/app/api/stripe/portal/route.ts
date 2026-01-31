@@ -1,9 +1,48 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
-// Stripe portal is disabled for now
+import { prisma } from "@/lib/prisma";
+import { createPortalSession, isStripeConfigured } from "@/lib/stripe";
+
+export const dynamic = "force-dynamic";
+
 export async function POST() {
-  return NextResponse.json(
-    { error: "Billing portal coming soon! Stripe is not configured yet." },
-    { status: 503 }
-  );
+  try {
+    if (!isStripeConfigured()) {
+      return NextResponse.json(
+        { error: "Stripe is not configured" },
+        { status: 503 }
+      );
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
+
+    if (!user?.stripeCustomerId) {
+      return NextResponse.json(
+        { error: "No billing account found" },
+        { status: 404 }
+      );
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const session = await createPortalSession({
+      customerId: user.stripeCustomerId,
+      returnUrl: `${baseUrl}/dashboard`,
+    });
+
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.error("Portal error:", error);
+    return NextResponse.json(
+      { error: "Failed to create portal session" },
+      { status: 500 }
+    );
+  }
 }
