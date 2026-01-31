@@ -25,12 +25,12 @@ async function getInstructors() {
   const instructors = await prisma.user.findMany({
     where: {
       role: { in: ["COACH", "ADMIN"] },
-      courses: {
+      coursesCreated: {
         some: { status: "PUBLISHED" },
       },
     },
     include: {
-      courses: {
+      coursesCreated: {
         where: { status: "PUBLISHED" },
         select: {
           discipline: true,
@@ -38,7 +38,7 @@ async function getInstructors() {
       },
       _count: {
         select: {
-          courses: {
+          coursesCreated: {
             where: { status: "PUBLISHED" },
           },
         },
@@ -81,7 +81,7 @@ export default async function InstructorsPage() {
             {instructors.map((instructor) => {
               const name = `${instructor.firstName} ${instructor.lastName}`;
               const disciplines = [
-                ...new Set(instructor.courses.map((c) => c.discipline)),
+                ...new Set(instructor.coursesCreated.map((c) => c.discipline)),
               ];
 
               return (
@@ -100,8 +100,8 @@ export default async function InstructorsPage() {
                       <div>
                         <h3 className="font-semibold text-lg">{name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          {instructor._count.courses} course
-                          {instructor._count.courses !== 1 ? "s" : ""}
+                          {instructor._count.coursesCreated} course
+                          {instructor._count.coursesCreated !== 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>

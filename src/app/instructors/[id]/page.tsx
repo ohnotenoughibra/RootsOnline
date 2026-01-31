@@ -22,7 +22,7 @@ async function getInstructor(id: string) {
   const instructor = await prisma.user.findUnique({
     where: { id, role: { in: ["COACH", "ADMIN"] } },
     include: {
-      courses: {
+      coursesCreated: {
         where: { status: "PUBLISHED" },
         include: {
           modules: {
@@ -75,12 +75,12 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   }
 
   const name = `${instructor.firstName} ${instructor.lastName}`;
-  const totalCourses = instructor.courses.length;
-  const totalLessons = instructor.courses.reduce(
+  const totalCourses = instructor.coursesCreated.length;
+  const totalLessons = instructor.coursesCreated.reduce(
     (acc, c) => acc + c.modules.reduce((a, m) => a + m._count.lessons, 0),
     0
   );
-  const totalDuration = instructor.courses.reduce(
+  const totalDuration = instructor.coursesCreated.reduce(
     (acc, c) =>
       acc +
       c.modules.reduce(
@@ -91,7 +91,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
   );
 
   // Get unique disciplines
-  const disciplines = [...new Set(instructor.courses.map((c) => c.discipline))];
+  const disciplines = [...new Set(instructor.coursesCreated.map((c) => c.discipline))];
 
   return (
     <div className="py-12">
@@ -143,14 +143,14 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
         <section>
           <h2 className="text-2xl font-bold mb-6">Courses by {instructor.firstName}</h2>
 
-          {instructor.courses.length === 0 ? (
+          {instructor.coursesCreated.length === 0 ? (
             <Card className="p-8 text-center">
               <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No published courses yet.</p>
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {instructor.courses.map((course) => {
+              {instructor.coursesCreated.map((course) => {
                 const lessonsCount = course.modules.reduce(
                   (acc, m) => acc + m._count.lessons,
                   0
