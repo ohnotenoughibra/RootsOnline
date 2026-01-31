@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, Instagram, Youtube, Mail } from "lucide-react";
+
+import { siteConfig } from "@/lib/site-config";
 
 const footerNavigation = {
   disciplines: [
@@ -8,20 +10,24 @@ const footerNavigation = {
     { name: "Grappling", href: "/courses?discipline=GRAPPLING" },
   ],
   support: [
-    { name: "Help Center", href: "/help" },
     { name: "Contact Us", href: "/contact" },
-    { name: "FAQ", href: "/faq" },
+    { name: "FAQ", href: "/pricing#faq" },
   ],
   company: [
     { name: "About", href: "/about" },
-    { name: "Coaches", href: "/coaches" },
-    { name: "Careers", href: "/careers" },
+    { name: "Pricing", href: "/pricing" },
   ],
   legal: [
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
   ],
 };
+
+const socialLinks = [
+  { name: "Instagram", href: siteConfig.links.instagram, icon: Instagram },
+  { name: "YouTube", href: siteConfig.links.youtube, icon: Youtube },
+  { name: "Email", href: `mailto:${siteConfig.support.email}`, icon: Mail },
+];
 
 export function Footer() {
   return (
@@ -38,6 +44,25 @@ export function Footer() {
               Roots Online Academy - World-class martial arts instruction from
               elite coaches, available anywhere, anytime.
             </p>
+
+            {/* Social links */}
+            <div className="flex gap-4 pt-2">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary transition-colors"
+                    aria-label={social.name}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                );
+              })}
+            </div>
           </div>
 
           {/* Links sections */}
@@ -110,10 +135,13 @@ export function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-12 border-t pt-8">
-          <p className="text-xs text-muted-foreground text-center">
+        <div className="mt-12 border-t pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Roots Online Academy. All rights
             reserved.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Made with passion for martial arts
           </p>
         </div>
       </div>

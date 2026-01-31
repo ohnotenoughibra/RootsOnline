@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { Search, BookOpen } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
@@ -7,7 +8,20 @@ import { DisciplineFilter } from "@/components/course/discipline-filter";
 import { LanguageFilter } from "@/components/course/language-filter";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { siteConfig } from "@/lib/site-config";
 import type { Discipline, Language } from "@/types";
+
+export const metadata: Metadata = {
+  title: "Courses",
+  description:
+    "Browse our complete library of MMA, Kickboxing, Grappling, and BJJ courses. Learn from world-class martial arts instructors.",
+  openGraph: {
+    title: "Martial Arts Courses | ROA",
+    description:
+      "Browse our complete library of MMA, Kickboxing, Grappling, and BJJ courses. Learn from world-class martial arts instructors.",
+    url: `${siteConfig.url}/courses`,
+  },
+};
 
 interface CoursesPageProps {
   searchParams: Promise<{

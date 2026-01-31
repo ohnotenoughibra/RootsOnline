@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, BookOpen, User } from "lucide-react";
@@ -10,11 +11,56 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
 import { getDisciplineLabel, getInitials, formatDuration } from "@/lib/utils";
+import { siteConfig } from "@/lib/site-config";
 
 interface CoursePageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: CoursePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const course = await prisma.course.findUnique({
+    where: { slug, status: "PUBLISHED" },
+    select: {
+      title: true,
+      shortDescription: true,
+      description: true,
+      coverImage: true,
+      discipline: true,
+      coach: {
+        select: { firstName: true, lastName: true },
+      },
+    },
+  });
+
+  if (!course) {
+    return { title: "Course Not Found" };
+  }
+
+  const description =
+    course.shortDescription || course.description.slice(0, 160);
+  const coachName = `${course.coach.firstName} ${course.coach.lastName}`;
+
+  return {
+    title: course.title,
+    description: `${description} - taught by ${coachName}`,
+    openGraph: {
+      title: `${course.title} | ROA`,
+      description,
+      url: `${siteConfig.url}/courses/${slug}`,
+      images: course.coverImage ? [{ url: course.coverImage }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: course.title,
+      description,
+      images: course.coverImage ? [course.coverImage] : undefined,
+    },
+  };
 }
 
 async function getCourse(slug: string) {
