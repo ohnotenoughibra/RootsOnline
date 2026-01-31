@@ -65,6 +65,14 @@ model User {
   trainingFootage       TrainingFootage[]  @relation("MemberFootage")
   feedbackGiven         VideoFeedback[]    @relation("CoachFeedback")
 
+  // Feature relations
+  bookmarks             Bookmark[]
+  notes                 LessonNote[]
+  certificates          Certificate[]
+  streaks               TrainingStreak[]
+  referralsSent         Referral[]         @relation("ReferralSender")
+  referredBy            Referral?          @relation("ReferredUser")
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -89,6 +97,9 @@ model Course {
 
   // Modules within this course
   modules         Module[]
+
+  // Feature relations
+  certificates    Certificate[]
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -143,6 +154,10 @@ model Lesson {
 
   // Progress tracking
   progress        LessonProgress[]
+
+  // Feature relations
+  bookmarks       Bookmark[]
+  notes           LessonNote[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -241,4 +256,80 @@ model VideoFeedback {
 
   @@index([footageId])
   @@index([coachId])
+}
+
+// Bookmarked lessons
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+}
+
+// User notes on lessons
+model LessonNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  timestamp Int?     // Video timestamp in seconds
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([lessonId])
+}
+
+// Course completion certificates
+model Certificate {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  certificateNumber String @unique
+  completedAt  DateTime @default(now())
+  pdfUrl       String?
+
+  @@unique([userId, courseId])
+  @@index([userId])
+}
+
+// Daily training streaks
+model TrainingStreak {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId])
+}
+
+// Referral tracking
+model Referral {
+  id              String   @id @default(cuid())
+  referrerId      String
+  referrer        User     @relation("ReferralSender", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredUserId  String?  @unique
+  referredUser    User?    @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: SetNull)
+  referralCode    String   @unique
+  rewardClaimed   Boolean  @default(false)
+  rewardAmount    Int      @default(20) // €20 reward
+  status          String   @default("PENDING") // PENDING, COMPLETED, EXPIRED
+  createdAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  @@index([referrerId])
+  @@index([referralCode])
 }

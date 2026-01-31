@@ -114,7 +114,9 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   }
 
   const status = mapStripeStatus(subscription.status);
-  const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+  // Type assertion for current_period_end which exists on subscription
+  const subData = subscription as unknown as { current_period_end: number };
+  const currentPeriodEnd = new Date(subData.current_period_end * 1000);
 
   await prisma.user.update({
     where: { id: user.id },

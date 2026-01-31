@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { CheckCircle2, Loader2, Zap } from "lucide-react";
+import { CheckCircle2, Loader2, Zap, Gift } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,11 @@ import { Badge } from "@/components/ui/badge";
 
 const plans = [
   {
-    id: "monthly",
-    name: "Monthly",
-    price: 29,
-    interval: "month",
+    id: "weekly",
+    name: "Weekly",
+    price: 5,
+    currency: "€",
+    interval: "week",
     description: "Full access, cancel anytime",
     features: [
       "Unlimited access to all courses",
@@ -23,36 +24,25 @@ const plans = [
       "HD video quality",
       "Training footage feedback",
       "Mobile & desktop access",
-      "Cancel anytime",
+      "Cancel anytime - no commitment",
     ],
   },
   {
     id: "annual",
     name: "Annual",
-    price: 249,
+    price: 99,
+    currency: "€",
     interval: "year",
-    description: "Best value - save $99/year",
+    description: "Best value - save over 60%",
     popular: true,
+    savings: "Save €161",
     features: [
-      "Everything in Monthly",
-      "Save $99 vs monthly",
+      "Everything in Weekly",
+      "Only €1.90/week (save 60%+)",
       "Priority feedback from coaches",
       "Early access to new courses",
       "Exclusive Q&A sessions",
-    ],
-  },
-  {
-    id: "lifetime",
-    name: "Lifetime",
-    price: 499,
-    interval: "once",
-    description: "Pay once, access forever",
-    features: [
-      "Everything in Annual",
-      "Never pay again",
-      "Founding member badge",
-      "Direct coach access",
-      "Future courses included",
+      "Course completion certificates",
     ],
   },
 ];
@@ -99,17 +89,21 @@ export default function PricingPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
+          <Badge className="mb-4" variant="secondary">
+            <Gift className="h-3 w-3 mr-1" />
+            Limited Time: 60%+ off Annual Plan
+          </Badge>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Simple, Transparent Pricing
+            Train Like a Champion
           </h1>
           <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
-            Get unlimited access to all courses from world-class martial arts
-            coaches. No hidden fees.
+            Get unlimited access to world-class martial arts instruction.
+            Start for just €5/week - cancel anytime.
           </p>
         </div>
 
         {/* Plans */}
-        <div className="grid gap-8 lg:grid-cols-3 max-w-5xl mx-auto">
+        <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
           {plans.map((plan) => (
             <Card
               key={plan.id}
@@ -120,16 +114,21 @@ export default function PricingPage() {
               {plan.popular && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <Zap className="h-3 w-3 mr-1" />
-                  Most Popular
+                  Best Value
                 </Badge>
               )}
 
               <div className="text-center">
                 <h3 className="text-xl font-semibold">{plan.name}</h3>
                 <div className="mt-4 flex items-baseline justify-center gap-1">
-                  <span className="text-5xl font-bold">${plan.price}</span>
+                  <span className="text-5xl font-bold">{plan.currency}{plan.price}</span>
                   <span className="text-muted-foreground">/{plan.interval}</span>
                 </div>
+                {plan.savings && (
+                  <Badge variant="secondary" className="mt-2">
+                    {plan.savings}
+                  </Badge>
+                )}
                 <p className="mt-2 text-sm text-muted-foreground">
                   {plan.description}
                 </p>
@@ -156,18 +155,29 @@ export default function PricingPage() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
+                ) : plan.popular ? (
+                  "Get Annual - Save 60%"
                 ) : (
-                  `Get ${plan.name}`
+                  "Start Weekly"
                 )}
               </Button>
             </Card>
           ))}
         </div>
 
-        {/* Trust badges */}
+        {/* Comparison */}
         <div className="mt-12 text-center">
+          <div className="inline-flex items-center gap-8 text-sm text-muted-foreground">
+            <span>Weekly: €5 × 52 = <strong className="text-foreground">€260/year</strong></span>
+            <span className="text-primary font-semibold">vs</span>
+            <span>Annual: <strong className="text-foreground">€99/year</strong> (save €161)</span>
+          </div>
+        </div>
+
+        {/* Trust badges */}
+        <div className="mt-8 text-center">
           <p className="text-muted-foreground">
-            30-day money-back guarantee. Secure payment via Stripe.
+            7-day money-back guarantee. Secure payment via Stripe. Cancel anytime.
           </p>
         </div>
 
@@ -179,34 +189,42 @@ export default function PricingPage() {
 
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold">Can I cancel anytime?</h3>
+              <h3 className="font-semibold">Can I really cancel anytime?</h3>
               <p className="mt-2 text-muted-foreground">
-                Yes! You can cancel your subscription at any time. You&apos;ll
-                continue to have access until the end of your billing period.
+                Absolutely! With the weekly plan, you can cancel any time with no commitment.
+                You&apos;ll keep access until your current period ends.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold">Why is annual so much cheaper?</h3>
+              <p className="mt-2 text-muted-foreground">
+                We reward commitment! Annual members save over 60% compared to weekly billing.
+                It&apos;s our way of thanking dedicated students.
               </p>
             </div>
 
             <div>
               <h3 className="font-semibold">What payment methods do you accept?</h3>
               <p className="mt-2 text-muted-foreground">
-                We accept all major credit cards (Visa, Mastercard, American
-                Express) through our secure payment processor, Stripe.
+                We accept all major credit cards, Apple Pay, Google Pay, and SEPA Direct Debit
+                through our secure payment processor, Stripe.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold">What&apos;s included in the training footage feedback?</h3>
+              <h3 className="font-semibold">What&apos;s included in training footage feedback?</h3>
               <p className="mt-2 text-muted-foreground">
-                Upload videos of your training and get personalized feedback from
+                Upload videos of your training and get personalized video feedback from
                 our expert coaches to improve your technique.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold">Can I switch plans?</h3>
+              <h3 className="font-semibold">Can I upgrade from weekly to annual?</h3>
               <p className="mt-2 text-muted-foreground">
-                Yes, you can upgrade or downgrade your plan at any time. Changes
-                take effect at the start of your next billing cycle.
+                Yes! You can upgrade anytime. We&apos;ll prorate your remaining weekly balance
+                towards your annual subscription.
               </p>
             </div>
           </div>

@@ -9,44 +9,35 @@ export const stripe = process.env.STRIPE_SECRET_KEY
   : null;
 
 export const SUBSCRIPTION_PLANS = {
-  monthly: {
-    name: "Monthly",
-    price: 29,
-    priceId: process.env.STRIPE_MONTHLY_PRICE_ID || "",
-    interval: "month" as const,
+  weekly: {
+    name: "Weekly",
+    price: 5,
+    currency: "EUR",
+    priceId: process.env.STRIPE_WEEKLY_PRICE_ID || "",
+    interval: "week" as const,
     description: "Full access, cancel anytime",
     features: [
       "All courses & tutorials",
       "New content weekly",
       "Training footage feedback",
       "Mobile & desktop access",
+      "Cancel anytime",
     ],
   },
   annual: {
     name: "Annual",
-    price: 249,
+    price: 99,
+    currency: "EUR",
     priceId: process.env.STRIPE_ANNUAL_PRICE_ID || "",
     interval: "year" as const,
-    description: "Best value - save $99/year",
-    savings: 99,
+    description: "Best value - save over 60%",
+    savings: 161,
     features: [
-      "Everything in Monthly",
-      "Save $99 vs monthly",
+      "Everything in Weekly",
+      "Save €161 vs weekly",
       "Priority feedback",
       "Early access to new courses",
-    ],
-  },
-  lifetime: {
-    name: "Lifetime",
-    price: 499,
-    priceId: process.env.STRIPE_LIFETIME_PRICE_ID || "",
-    interval: "one_time" as const,
-    description: "One-time payment, forever access",
-    features: [
-      "Everything in Annual",
-      "Never pay again",
-      "Founding member badge",
-      "Direct coach access",
+      "Exclusive Q&A sessions",
     ],
   },
 } as const;

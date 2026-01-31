@@ -242,24 +242,24 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Simple, Transparent Pricing
+              Start Training for €5/week
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Get unlimited access to all courses and new content added weekly
+              Full access to all courses. Cancel anytime - no commitment.
             </p>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 max-w-4xl mx-auto">
-            {/* Monthly Plan */}
+            {/* Weekly Plan */}
             <Card className="p-8">
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Monthly</h3>
+                <h3 className="text-lg font-semibold">Weekly</h3>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$29</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-4xl font-bold">€5</span>
+                  <span className="text-muted-foreground">/week</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Perfect for trying out the platform
+                  Full access, cancel anytime
                 </p>
               </div>
               <ul className="mt-8 space-y-3">
@@ -267,7 +267,7 @@ export default function HomePage() {
                   "Unlimited course access",
                   "New content weekly",
                   "HD video quality",
-                  "Mobile app access",
+                  "Training footage feedback",
                   "Cancel anytime",
                 ].map((feature) => (
                   <li key={feature} className="flex items-center gap-2 text-sm">
@@ -278,33 +278,33 @@ export default function HomePage() {
               </ul>
               <Link href="/pricing" className="block mt-8">
                 <Button className="w-full" variant="outline">
-                  Get Started
+                  Start Weekly
                 </Button>
               </Link>
             </Card>
 
-            {/* Yearly Plan */}
+            {/* Annual Plan */}
             <Card className="p-8 border-primary relative">
               <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
-                Best Value
+                Save 60%+
               </Badge>
               <div className="text-center">
-                <h3 className="text-lg font-semibold">Yearly</h3>
+                <h3 className="text-lg font-semibold">Annual</h3>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold">$249</span>
+                  <span className="text-4xl font-bold">€99</span>
                   <span className="text-muted-foreground">/year</span>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Save over $100 compared to monthly
+                  Only €1.90/week - save €161
                 </p>
               </div>
               <ul className="mt-8 space-y-3">
                 {[
-                  "Everything in Monthly",
-                  "2 months free",
-                  "Priority support",
+                  "Everything in Weekly",
+                  "Save over 60%",
+                  "Priority coach feedback",
                   "Early access to new courses",
-                  "Exclusive Q&A sessions",
+                  "Course certificates",
                 ].map((feature) => (
                   <li key={feature} className="flex items-center gap-2 text-sm">
                     <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
@@ -313,7 +313,7 @@ export default function HomePage() {
                 ))}
               </ul>
               <Link href="/pricing" className="block mt-8">
-                <Button className="w-full">Get Started</Button>
+                <Button className="w-full">Get Annual - Save 60%</Button>
               </Link>
             </Card>
           </div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Clock, Award, Settings } from "lucide-react";
+import { BookOpen, Clock, Award, Settings, Bookmark, FileText, Users, Flame, Trophy } from "lucide-react";
 
 import { getCurrentUser, hasActiveSubscription } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -60,6 +60,20 @@ export default async function DashboardPage() {
     0
   );
 
+  // Get streak data
+  const streak = await prisma.trainingStreak.findUnique({
+    where: { userId: user.id },
+  });
+
+  // Get counts for quick stats
+  const bookmarkCount = await prisma.bookmark.count({
+    where: { userId: user.id },
+  });
+
+  const certificateCount = await prisma.certificate.count({
+    where: { userId: user.id },
+  });
+
   return (
     <div className="py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -99,7 +113,18 @@ export default async function DashboardPage() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Day Streak</CardTitle>
+              <Flame className={`h-4 w-4 ${(streak?.currentStreak ?? 0) > 0 ? "text-orange-500" : "text-muted-foreground"}`} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{streak?.currentStreak ?? 0}</div>
+              <p className="text-xs text-muted-foreground">Best: {streak?.longestStreak ?? 0}</p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
@@ -137,6 +162,65 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Quick Access */}
+        <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <Link href="/dashboard/bookmarks">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                  <Bookmark className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Bookmarks</p>
+                  <p className="text-sm text-muted-foreground">{bookmarkCount} saved</p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/notes">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-green-100 dark:bg-green-900/30">
+                  <FileText className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Notes</p>
+                  <p className="text-sm text-muted-foreground">Your notes</p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/certificates">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+                  <Trophy className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Certificates</p>
+                  <p className="text-sm text-muted-foreground">{certificateCount} earned</p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/referrals">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                  <Users className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Refer Friends</p>
+                  <p className="text-sm text-muted-foreground">Earn €20</p>
+                </div>
+              </div>
+            </Card>
+          </Link>
         </div>
 
         {/* Courses in Progress */}
