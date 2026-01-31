@@ -3,12 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { CheckCircle2, Loader2, Zap, Gift } from "lucide-react";
+import { CheckCircle2, Loader2, Zap, Gift, Building2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const plans = [
   {
@@ -48,9 +55,10 @@ const plans = [
 ];
 
 export default function PricingPage() {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
+  const [showSepaDialog, setShowSepaDialog] = useState(false);
 
   const handleSubscribe = async (planId: string) => {
     if (!isSignedIn) {
@@ -174,12 +182,83 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Trust badges */}
+        {/* SEPA Option */}
         <div className="mt-8 text-center">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground"
+            onClick={() => setShowSepaDialog(true)}
+          >
+            <Building2 className="h-4 w-4 mr-2" />
+            Pay via Bank Transfer (SEPA) - No fees
+          </Button>
+        </div>
+
+        {/* Trust badges */}
+        <div className="mt-4 text-center">
           <p className="text-muted-foreground">
             7-day money-back guarantee. Secure payment via Stripe. Cancel anytime.
           </p>
         </div>
+
+        {/* SEPA Dialog */}
+        <Dialog open={showSepaDialog} onOpenChange={setShowSepaDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Bank Transfer (SEPA)
+              </DialogTitle>
+              <DialogDescription>
+                Pay for your annual subscription via bank transfer - no processing fees!
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="bg-muted p-4 rounded-lg space-y-2 font-mono text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Amount:</span>
+                  <span className="font-bold">€99.00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Bank:</span>
+                  <span>Your Bank Name</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">IBAN:</span>
+                  <span>DE89 3704 0044 0532 0130 00</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">BIC:</span>
+                  <span>COBADEFFXXX</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Reference:</span>
+                  <span className="text-primary font-bold">
+                    ROA-{user?.id?.slice(-8).toUpperCase() || "XXXXXXXX"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-sm text-muted-foreground space-y-2">
+                <p><strong>Important:</strong></p>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li>Include your reference code in the payment description</li>
+                  <li>Activation within 24-48 hours after payment received</li>
+                  <li>Annual subscription only (€99/year)</li>
+                  <li>Email confirmation sent after activation</li>
+                </ul>
+              </div>
+
+              <div className="text-sm">
+                Questions? Email us at{" "}
+                <a href="mailto:support@rootsonline.com" className="text-primary hover:underline">
+                  support@rootsonline.com
+                </a>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* FAQ */}
         <div className="mt-20 max-w-3xl mx-auto">
