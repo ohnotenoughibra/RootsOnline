@@ -86,6 +86,11 @@ model User {
   belts                 UserBelt[]
   achievements          UserAchievement[]
 
+  // Q&A session relations
+  qaSessionsAsStudent   QASession[]        @relation("StudentSessions")
+  qaSessionsAsCoach     QASession[]        @relation("CoachSessions")
+  coachAvailability     CoachAvailability[] @relation("CoachAvailability")
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -274,17 +279,20 @@ model VideoFeedback {
   @@index([coachId])
 }
 
-// Bookmarked lessons
+// Bookmarked lessons with timestamps
 model Bookmark {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId  String
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  timestamp Int?     // Video timestamp in seconds (null for lesson-level bookmark)
+  label     String?  // Optional label/description for the bookmark
   createdAt DateTime @default(now())
 
-  @@unique([userId, lessonId])
   @@index([userId])
+  @@index([lessonId])
+  @@index([userId, lessonId])
 }
 
 // User notes on lessons
@@ -428,6 +436,71 @@ model UserAchievement {
 
   @@unique([userId, achievementId])
   @@index([userId])
+}
+
+// Coach Q&A session bookings
+enum QASessionStatus {
+  PENDING       // Waiting for coach confirmation
+  CONFIRMED     // Coach confirmed
+  COMPLETED     // Session happened
+  CANCELLED     // Cancelled by either party
+}
+
+model QASession {
+  id            String          @id @default(cuid())
+
+  // Student who booked
+  studentId     String
+  student       User            @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Coach who will answer
+  coachId       String
+  coach         User            @relation("CoachSessions", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Session details
+  topic         String          // What they want to discuss
+  questions     String          @db.Text // Pre-submitted questions
+  scheduledAt   DateTime        // When the session is scheduled
+  duration      Int             @default(30) // Duration in minutes (15, 30, 60)
+
+  // Status
+  status        QASessionStatus @default(PENDING)
+
+  // Communication
+  meetingUrl    String?         // Video call link (Zoom, Meet, etc.)
+  notes         String?         @db.Text // Coach notes after session
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([studentId])
+  @@index([coachId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+// Coach availability slots
+model CoachAvailability {
+  id          String   @id @default(cuid())
+  coachId     String
+  coach       User     @relation("CoachAvailability", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Day and time (recurring weekly)
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime   String   // "09:00" format
+  endTime     String   // "17:00" format
+
+  // Pricing (in cents)
+  price15min  Int      @default(2500)  // €25
+  price30min  Int      @default(4500)  // €45
+  price60min  Int      @default(7500)  // €75
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([coachId, dayOfWeek])
+  @@index([coachId])
 }
 
 // Promo codes for discounts

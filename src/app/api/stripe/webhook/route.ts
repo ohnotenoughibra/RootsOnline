@@ -3,7 +3,14 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 
 import { prisma } from "@/lib/prisma";
-import { stripe } from "@/lib/stripe";
+import { stripe, SUBSCRIPTION_PLANS } from "@/lib/stripe";
+import {
+  sendEmail,
+  subscriptionConfirmedEmail,
+  subscriptionCancelledEmail,
+  paymentFailedEmail,
+  paymentRetryEmail,
+} from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -113,20 +120,39 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     return;
   }
 
+  const previousStatus = user.subscriptionStatus;
   const status = mapStripeStatus(subscription.status);
   // Type assertion for current_period_end which exists on subscription
   const subData = subscription as unknown as { current_period_end: number };
   const currentPeriodEnd = new Date(subData.current_period_end * 1000);
+  const priceId = subscription.items.data[0]?.price.id;
 
   await prisma.user.update({
     where: { id: user.id },
     data: {
       subscriptionId: subscription.id,
       subscriptionStatus: status,
-      subscriptionPriceId: subscription.items.data[0]?.price.id,
+      subscriptionPriceId: priceId,
       subscriptionEndsAt: currentPeriodEnd,
     },
   });
+
+  // Send confirmation email when subscription becomes active (new subscription)
+  if (status === "ACTIVE" && previousStatus !== "ACTIVE" && user.email) {
+    const planName = priceId === SUBSCRIPTION_PLANS.annual.priceId ? "Annual" : "Monthly";
+    const amount = priceId === SUBSCRIPTION_PLANS.annual.priceId ? "€199/year" : "€19.99/month";
+    const email = subscriptionConfirmedEmail({
+      firstName: user.firstName,
+      plan: planName,
+      amount,
+      nextBillingDate: currentPeriodEnd.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    });
+    await sendEmail({ to: user.email, ...email });
+  }
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -138,6 +164,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   if (!user) return;
 
+  // Get the end date before we clear subscription data
+  const subData = subscription as unknown as { current_period_end: number };
+  const endDate = new Date(subData.current_period_end * 1000);
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -145,6 +175,19 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       subscriptionId: null,
     },
   });
+
+  // Send cancellation email
+  if (user.email) {
+    const email = subscriptionCancelledEmail({
+      firstName: user.firstName,
+      endDate: endDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    });
+    await sendEmail({ to: user.email, ...email });
+  }
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -178,6 +221,44 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice) {
     where: { id: user.id },
     data: { subscriptionStatus: "PAST_DUE" },
   });
+
+  // Send payment failed email with dunning info
+  if (user.email) {
+    const attemptCount = invoice.attempt_count || 1;
+    const amount = invoice.amount_due
+      ? `€${(invoice.amount_due / 100).toFixed(2)}`
+      : "your subscription";
+
+    // Stripe typically retries 3 times by default
+    const finalAttempt = attemptCount >= 3;
+
+    if (attemptCount === 1) {
+      // First failure - send initial payment failed email
+      const nextAttempt = invoice.next_payment_attempt
+        ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : undefined;
+
+      const email = paymentFailedEmail({
+        firstName: user.firstName,
+        amount,
+        retryDate: nextAttempt,
+      });
+      await sendEmail({ to: user.email, ...email });
+    } else {
+      // Subsequent failures - send retry email
+      const email = paymentRetryEmail({
+        firstName: user.firstName,
+        amount,
+        attemptNumber: attemptCount,
+        finalAttempt,
+      });
+      await sendEmail({ to: user.email, ...email });
+    }
+  }
 }
 
 function mapStripeStatus(status: Stripe.Subscription.Status): "ACTIVE" | "CANCELED" | "PAST_DUE" | "TRIALING" | "INACTIVE" {

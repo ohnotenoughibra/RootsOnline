@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   Play,
   Pause,
@@ -11,7 +11,9 @@ import {
   SkipForward,
   AlertCircle,
   RotateCcw,
-  Settings
+  Bookmark,
+  StickyNote,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+interface BookmarkData {
+  id: string;
+  timestamp: number | null;
+  label: string | null;
+}
+
+interface NoteData {
+  id: string;
+  timestamp: number | null;
+  content: string;
+}
 
 interface VideoPlayerProps {
   src: string;
@@ -31,6 +54,9 @@ interface VideoPlayerProps {
   autoPlay?: boolean;
   startTime?: number;
   title?: string;
+  lessonId?: string;
+  initialBookmarks?: BookmarkData[];
+  initialNotes?: NoteData[];
 }
 
 export function VideoPlayer({
@@ -42,6 +68,9 @@ export function VideoPlayer({
   autoPlay = false,
   startTime = 0,
   title,
+  lessonId,
+  initialBookmarks = [],
+  initialNotes = [],
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,6 +86,16 @@ export function VideoPlayer({
   const [showEndScreen, setShowEndScreen] = useState(false);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Bookmark and notes state
+  const [bookmarks, setBookmarks] = useState<BookmarkData[]>(initialBookmarks);
+  const [notes, setNotes] = useState<NoteData[]>(initialNotes);
+  const [showBookmarkDialog, setShowBookmarkDialog] = useState(false);
+  const [showNoteDialog, setShowNoteDialog] = useState(false);
+  const [bookmarkLabel, setBookmarkLabel] = useState("");
+  const [noteContent, setNoteContent] = useState("");
+  const [bookmarkTimestamp, setBookmarkTimestamp] = useState(0);
+  const [noteTimestamp, setNoteTimestamp] = useState(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -215,6 +254,104 @@ export function VideoPlayer({
     }
   };
 
+  // Bookmark handlers
+  const openBookmarkDialog = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    setIsPlaying(false);
+    setBookmarkTimestamp(Math.floor(video.currentTime));
+    setBookmarkLabel("");
+    setShowBookmarkDialog(true);
+  }, []);
+
+  const handleAddBookmark = async () => {
+    if (!lessonId) {
+      toast.error("Cannot save bookmark for this lesson");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/bookmarks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonId,
+          timestamp: bookmarkTimestamp,
+          label: bookmarkLabel || null,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add bookmark");
+
+      const bookmark = await res.json();
+      setBookmarks((prev) => [...prev, bookmark]);
+      setShowBookmarkDialog(false);
+      toast.success("Bookmark saved!");
+    } catch {
+      toast.error("Failed to save bookmark");
+    }
+  };
+
+  const handleDeleteBookmark = async (id: string) => {
+    try {
+      const res = await fetch(`/api/bookmarks?id=${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete bookmark");
+      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+      toast.success("Bookmark deleted");
+    } catch {
+      toast.error("Failed to delete bookmark");
+    }
+  };
+
+  // Note handlers
+  const openNoteDialog = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    setIsPlaying(false);
+    setNoteTimestamp(Math.floor(video.currentTime));
+    setNoteContent("");
+    setShowNoteDialog(true);
+  }, []);
+
+  const handleAddNote = async () => {
+    if (!lessonId || !noteContent.trim()) {
+      toast.error("Please enter a note");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          lessonId,
+          timestamp: noteTimestamp,
+          content: noteContent.trim(),
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add note");
+
+      const note = await res.json();
+      setNotes((prev) => [...prev, note]);
+      setShowNoteDialog(false);
+      toast.success("Note saved!");
+    } catch {
+      toast.error("Failed to save note");
+    }
+  };
+
+  // Jump to timestamp
+  const jumpToTimestamp = (seconds: number) => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.currentTime = seconds;
+    video.play();
+    setIsPlaying(true);
+  };
+
   return (
     <div
       ref={containerRef}
@@ -292,11 +429,42 @@ export function VideoPlayer({
           showControls || !isPlaying ? "opacity-100" : "opacity-0"
         )}
       >
-        {/* Progress bar */}
+        {/* Progress bar with markers */}
         <div
-          className="mb-3 h-1 bg-white/30 rounded-full cursor-pointer group/progress"
+          className="mb-3 h-1 bg-white/30 rounded-full cursor-pointer group/progress relative"
           onClick={handleSeek}
         >
+          {/* Bookmark markers */}
+          {duration > 0 && bookmarks.map((bookmark) => (
+            bookmark.timestamp !== null && (
+              <div
+                key={bookmark.id}
+                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-yellow-400 rounded-full cursor-pointer hover:scale-150 transition-transform z-10"
+                style={{ left: `${(bookmark.timestamp / duration) * 100}%` }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  jumpToTimestamp(bookmark.timestamp!);
+                }}
+                title={bookmark.label || `Bookmark at ${formatTime(bookmark.timestamp)}`}
+              />
+            )
+          ))}
+          {/* Note markers */}
+          {duration > 0 && notes.map((note) => (
+            note.timestamp !== null && (
+              <div
+                key={note.id}
+                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-blue-400 rounded-full cursor-pointer hover:scale-150 transition-transform z-10"
+                style={{ left: `${(note.timestamp / duration) * 100}%` }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  jumpToTimestamp(note.timestamp!);
+                }}
+                title={note.content.substring(0, 50)}
+              />
+            )
+          ))}
+          {/* Progress fill */}
           <div
             className="h-full bg-primary rounded-full relative"
             style={{ width: `${progress}%` }}
@@ -340,6 +508,32 @@ export function VideoPlayer({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Bookmark button */}
+            {lessonId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/20"
+                onClick={openBookmarkDialog}
+                title="Add bookmark at current time"
+              >
+                <Bookmark className="h-4 w-4" />
+              </Button>
+            )}
+
+            {/* Note button */}
+            {lessonId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white hover:bg-white/20"
+                onClick={openNoteDialog}
+                title="Add note at current time"
+              >
+                <StickyNote className="h-4 w-4" />
+              </Button>
+            )}
+
             {/* Playback Speed */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -389,6 +583,68 @@ export function VideoPlayer({
           </div>
         </div>
       </div>
+
+      {/* Bookmark Dialog */}
+      <Dialog open={showBookmarkDialog} onOpenChange={setShowBookmarkDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Bookmark</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Timestamp: <span className="font-medium">{formatTime(bookmarkTimestamp)}</span>
+              </p>
+            </div>
+            <div>
+              <Input
+                placeholder="Label (optional)"
+                value={bookmarkLabel}
+                onChange={(e) => setBookmarkLabel(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddBookmark()}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowBookmarkDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddBookmark}>Save Bookmark</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Note Dialog */}
+      <Dialog open={showNoteDialog} onOpenChange={setShowNoteDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Timestamp: <span className="font-medium">{formatTime(noteTimestamp)}</span>
+              </p>
+            </div>
+            <div>
+              <Textarea
+                placeholder="Write your note here..."
+                value={noteContent}
+                onChange={(e) => setNoteContent(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowNoteDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddNote} disabled={!noteContent.trim()}>
+                Save Note
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,0 +1,42 @@
+{
+  "name": "Roots Online Academy",
+  "short_name": "ROA",
+  "description": "World-class martial arts instruction in MMA, Kickboxing, and Grappling",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#18181b",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["education", "sports", "fitness"],
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Courses",
+      "short_name": "Courses",
+      "url": "/dashboard",
+      "description": "View your enrolled courses"
+    },
+    {
+      "name": "Browse All Courses",
+      "short_name": "Browse",
+      "url": "/courses",
+      "description": "Browse all available courses"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

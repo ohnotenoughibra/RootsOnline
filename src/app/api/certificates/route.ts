@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
+import { sendEmail, certificateEarnedEmail } from "@/lib/email";
 
 // GET all certificates for current user
 export async function GET() {
@@ -152,6 +153,16 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Send certificate earned email
+    if (user.email) {
+      const email = certificateEarnedEmail({
+        firstName: user.firstName || "there",
+        courseTitle: certificate.course.title,
+        certificateNumber,
+      });
+      await sendEmail({ to: user.email, ...email });
+    }
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

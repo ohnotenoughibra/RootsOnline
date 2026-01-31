@@ -309,6 +309,53 @@ export default function PricingPage() {
             </div>
           </div>
         </div>
+
+        {/* Team/Gym Pricing */}
+        <div className="mt-20 max-w-4xl mx-auto">
+          <Card className="p-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1">
+                <Badge variant="secondary" className="mb-4">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  Team & Gym Plans
+                </Badge>
+                <h3 className="text-2xl font-bold">Training Your Team?</h3>
+                <p className="mt-2 text-muted-foreground">
+                  Get bulk pricing for your gym, fight team, or training group.
+                  Custom plans starting at 5+ members with significant discounts.
+                </p>
+                <ul className="mt-4 space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>5-10 members: 20% discount (€15.99/user/month)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>11-25 members: 30% discount (€13.99/user/month)</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>26+ members: Custom pricing available</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    <span>Team progress dashboard & admin controls</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-3">
+                <a href="mailto:teams@rootsonline.academy?subject=Team%20Pricing%20Inquiry">
+                  <Button size="lg">
+                    Contact for Team Pricing
+                  </Button>
+                </a>
+                <p className="text-xs text-center text-muted-foreground">
+                  Response within 24 hours
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );

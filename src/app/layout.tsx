@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { UserProvider } from "@/components/providers/user-provider";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
@@ -87,6 +89,8 @@ export default function RootLayout({
               <Footer />
             </div>
             <Toaster position="bottom-right" />
+            <ServiceWorkerRegister />
+            <InstallPrompt />
           </UserProvider>
         </body>
       </html>
