@@ -91,6 +91,10 @@ model User {
   qaSessionsAsCoach     QASession[]        @relation("CoachSessions")
   coachAvailability     CoachAvailability[] @relation("CoachAvailability")
 
+  // Learning path and quiz relations
+  learningPathEnrollments LearningPathEnrollment[]
+  quizAttempts          QuizAttempt[]
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -119,6 +123,7 @@ model Course {
 
   // Feature relations
   certificates    Certificate[]
+  learningPathItems LearningPathItem[]
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -179,6 +184,7 @@ model Lesson {
   bookmarks       Bookmark[]
   notes           LessonNote[]
   tags            LessonTag[]
+  quizzes         Quiz[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -520,4 +526,116 @@ model PromoCode {
 
   @@index([code])
   @@index([isActive])
+}
+
+// Learning paths - curated course sequences
+model LearningPath {
+  id              String            @id @default(cuid())
+  title           String
+  slug            String            @unique
+  description     String            @db.Text
+  coverImage      String?
+  discipline      Discipline
+  difficulty      String            @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  estimatedWeeks  Int               @default(4) // Estimated completion time
+  isPublished     Boolean           @default(false)
+
+  // Path items (courses in order)
+  items           LearningPathItem[]
+
+  // User enrollments
+  enrollments     LearningPathEnrollment[]
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([discipline])
+  @@index([isPublished])
+}
+
+// Courses within a learning path
+model LearningPathItem {
+  id              String        @id @default(cuid())
+  learningPathId  String
+  learningPath    LearningPath  @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order           Int           @default(0)
+  isRequired      Boolean       @default(true) // Optional courses for extra credit
+
+  @@unique([learningPathId, courseId])
+  @@index([learningPathId])
+  @@index([courseId])
+}
+
+// User enrollment in learning paths
+model LearningPathEnrollment {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningPathId  String
+  learningPath    LearningPath  @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+
+  @@unique([userId, learningPathId])
+  @@index([userId])
+  @@index([learningPathId])
+}
+
+// Technique quizzes for lessons
+model Quiz {
+  id              String        @id @default(cuid())
+  lessonId        String
+  lesson          Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  passingScore    Int           @default(70) // Percentage required to pass
+
+  questions       QuizQuestion[]
+  attempts        QuizAttempt[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([lessonId])
+}
+
+model QuizQuestion {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question        String        @db.Text
+  imageUrl        String?       // Optional image for the question
+  order           Int           @default(0)
+
+  options         QuizOption[]
+
+  @@index([quizId])
+}
+
+model QuizOption {
+  id              String        @id @default(cuid())
+  questionId      String
+  question        QuizQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text            String
+  isCorrect       Boolean       @default(false)
+  explanation     String?       // Explanation shown after answering
+
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score           Int           // Percentage score
+  passed          Boolean
+  answers         String        @db.Text // JSON of answers
+  completedAt     DateTime      @default(now())
+
+  @@index([quizId])
+  @@index([userId])
 }
