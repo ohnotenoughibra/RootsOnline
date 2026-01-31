@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Search, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { CourseGrid } from "@/components/course/course-grid";
 import { DisciplineFilter } from "@/components/course/discipline-filter";
 import { LanguageFilter } from "@/components/course/language-filter";
-import { Input } from "@/components/ui/input";
+import { CourseSearch } from "@/components/course/course-search";
 import { Card } from "@/components/ui/card";
 import { siteConfig } from "@/lib/site-config";
 import type { Discipline, Language } from "@/types";
@@ -116,17 +116,9 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
             </Suspense>
           </div>
 
-          <div className="relative flex-1 max-w-sm ml-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <form>
-              <Input
-                name="search"
-                placeholder="Search courses..."
-                defaultValue={params.search || ""}
-                className="pl-10"
-              />
-            </form>
-          </div>
+          <Suspense fallback={null}>
+            <CourseSearch />
+          </Suspense>
         </div>
 
         {/* Results */}

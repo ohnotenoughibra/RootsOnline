@@ -136,7 +136,10 @@ export default async function CoursePage({ params }: CoursePageProps) {
               </p>
 
               {/* Coach info */}
-              <div className="mt-6 flex items-center gap-3">
+              <Link
+                href={`/instructors/${course.coach.id}`}
+                className="mt-6 flex items-center gap-3 group"
+              >
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={course.coach.imageUrl || undefined} />
                   <AvatarFallback>
@@ -144,12 +147,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">
+                  <p className="font-medium group-hover:underline">
                     {course.coach.firstName} {course.coach.lastName}
                   </p>
                   <p className="text-sm text-gray-400">Course Instructor</p>
                 </div>
-              </div>
+              </Link>
 
               {/* Stats */}
               <div className="mt-6 flex items-center gap-6 text-sm text-gray-300">

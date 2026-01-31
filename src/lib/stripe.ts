@@ -47,6 +47,9 @@ export function isStripeConfigured(): boolean {
   return !!stripe;
 }
 
+// Free trial configuration
+export const FREE_TRIAL_DAYS = parseInt(process.env.FREE_TRIAL_DAYS || "0", 10);
+
 export async function createCheckoutSession(params: {
   customerId?: string;
   priceId: string;
@@ -55,6 +58,7 @@ export async function createCheckoutSession(params: {
   successUrl: string;
   cancelUrl: string;
   isLifetime?: boolean;
+  withTrial?: boolean;
 }) {
   if (!stripe) throw new Error("Stripe is not configured");
 
@@ -76,6 +80,13 @@ export async function createCheckoutSession(params: {
     },
     allow_promotion_codes: true,
   };
+
+  // Add trial period if enabled and requested
+  if (params.withTrial && FREE_TRIAL_DAYS > 0 && !params.isLifetime) {
+    sessionParams.subscription_data = {
+      trial_period_days: FREE_TRIAL_DAYS,
+    };
+  }
 
   const session = await stripe.checkout.sessions.create(sessionParams);
   return session;

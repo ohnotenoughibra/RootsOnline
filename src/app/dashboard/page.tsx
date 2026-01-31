@@ -121,6 +121,29 @@ export default async function DashboardPage() {
     where: { userId: user.id },
   });
 
+  // Get recommended courses (courses user hasn't started)
+  const recommendedCourses = await prisma.course.findMany({
+    where: {
+      status: "PUBLISHED",
+      id: { notIn: courseIds.length > 0 ? courseIds : ["none"] },
+    },
+    include: {
+      coach: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+      modules: {
+        include: {
+          _count: { select: { lessons: true } },
+        },
+      },
+    },
+    orderBy: [{ featured: "desc" }, { publishedAt: "desc" }],
+    take: 3,
+  });
+
   return (
     <div className="py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -379,6 +402,64 @@ export default async function DashboardPage() {
                 </ul>
               </CardContent>
             </Card>
+          </section>
+        )}
+
+        {/* Recommended Courses */}
+        {recommendedCourses.length > 0 && (
+          <section className="mt-12">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">Recommended For You</h2>
+              <Link href="/courses">
+                <Button variant="ghost" size="sm">
+                  View All
+                </Button>
+              </Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {recommendedCourses.map((course) => {
+                const disciplineVariant = course.discipline.toLowerCase() as
+                  | "mma"
+                  | "kickboxing"
+                  | "grappling";
+                const totalLessons = course.modules.reduce(
+                  (sum, m) => sum + m._count.lessons,
+                  0
+                );
+
+                return (
+                  <Card key={course.id} className="overflow-hidden">
+                    <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 relative">
+                      <Badge
+                        variant={disciplineVariant}
+                        className="absolute top-3 left-3"
+                      >
+                        {getDisciplineLabel(course.discipline)}
+                      </Badge>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold line-clamp-1">
+                        {course.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {course.coach.firstName} {course.coach.lastName}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {totalLessons} lessons
+                      </p>
+                      <Link
+                        href={`/courses/${course.slug}`}
+                        className="block mt-4"
+                      >
+                        <Button variant="outline" className="w-full" size="sm">
+                          View Course
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </section>
         )}
       </div>

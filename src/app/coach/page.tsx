@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus, BookOpen, Users, Eye, AlertCircle } from "lucide-react";
+import { Plus, BookOpen, Users, Eye, AlertCircle, TrendingUp, PlayCircle } from "lucide-react";
 
 import { getCurrentUser, isCoach } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -68,6 +68,30 @@ export default async function CoachDashboardPage() {
       0
     );
 
+    // Get course IDs for analytics queries
+    const courseIds = courses.map((c) => c.id);
+
+    // Get unique students who have progress on coach's courses
+    const studentProgress = await prisma.lessonProgress.findMany({
+      where: {
+        lesson: {
+          module: {
+            courseId: { in: courseIds },
+          },
+        },
+      },
+      select: {
+        userId: true,
+        completed: true,
+        watchedSeconds: true,
+      },
+    });
+
+    const uniqueStudents = new Set(studentProgress.map((p) => p.userId)).size;
+    const completedLessons = studentProgress.filter((p) => p.completed).length;
+    const totalWatchTime = studentProgress.reduce((acc, p) => acc + p.watchedSeconds, 0);
+    const watchTimeHours = Math.round(totalWatchTime / 3600);
+
     return (
       <div className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -88,7 +112,7 @@ export default async function CoachDashboardPage() {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">
@@ -109,10 +133,13 @@ export default async function CoachDashboardPage() {
                 <CardTitle className="text-sm font-medium">
                   Total Lessons
                 </CardTitle>
-                <Eye className="h-4 w-4 text-muted-foreground" />
+                <PlayCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalLessons}</div>
+                <p className="text-xs text-muted-foreground">
+                  {completedLessons} completions
+                </p>
               </CardContent>
             </Card>
 
@@ -122,8 +149,23 @@ export default async function CoachDashboardPage() {
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">-</div>
-                <p className="text-xs text-muted-foreground">Coming soon</p>
+                <div className="text-2xl font-bold">{uniqueStudents}</div>
+                <p className="text-xs text-muted-foreground">
+                  active learners
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Watch Time</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{watchTimeHours}h</div>
+                <p className="text-xs text-muted-foreground">
+                  total hours watched
+                </p>
               </CardContent>
             </Card>
           </div>

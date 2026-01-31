@@ -8,6 +8,7 @@ import {
   isStripeConfigured,
   SUBSCRIPTION_PLANS,
   PlanType,
+  FREE_TRIAL_DAYS,
 } from "@/lib/stripe";
 import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    const { plan } = await request.json();
+    const { plan, withTrial } = await request.json();
 
     if (!plan || !SUBSCRIPTION_PLANS[plan as PlanType]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
@@ -84,6 +85,13 @@ export async function POST(request: Request) {
       });
     }
 
+    // Check if user is eligible for trial (never had a subscription before)
+    const eligibleForTrial =
+      withTrial &&
+      FREE_TRIAL_DAYS > 0 &&
+      !dbUser.subscriptionId &&
+      dbUser.subscriptionStatus === "INACTIVE";
+
     // Create checkout session
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const session = await createCheckoutSession({
@@ -93,6 +101,7 @@ export async function POST(request: Request) {
       email,
       successUrl: `${baseUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${baseUrl}/pricing`,
+      withTrial: eligibleForTrial,
     });
 
     return NextResponse.json({ url: session.url });

@@ -77,7 +77,12 @@ export default async function CoachFeedbackPage() {
       orderBy: { createdAt: "asc" },
     });
 
-    // Get footage this coach has reviewed
+    // Get total count of reviews by this coach
+    const totalReviewCount = await prisma.videoFeedback.count({
+      where: { coachId: user.id },
+    });
+
+    // Get footage this coach has reviewed (paginated)
     const reviewedByMe = await prisma.videoFeedback.findMany({
       where: { coachId: user.id },
       include: {
@@ -130,7 +135,7 @@ export default async function CoachFeedbackPage() {
                 <MessageSquare className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{reviewedByMe.length}</div>
+                <div className="text-2xl font-bold">{totalReviewCount}</div>
               </CardContent>
             </Card>
 
