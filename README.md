@@ -5,7 +5,7 @@ A subscription-based online martial arts learning platform (similar to Submeta.i
 ## Features
 
 - **Multi-Creator Support**: Coaches can create and manage their own courses
-- **Subscription-Based Access**: Monthly ($29) and Yearly ($249) plans via Stripe
+- **Subscription-Based Access**: Weekly (€5) and Yearly (€99) plans via Stripe
 - **Three Disciplines**: MMA, Kickboxing, and Grappling categories
 - **HD Video Player**: Secure video playback with Cloudinary signed URLs
 - **Progress Tracking**: Track lesson completion and watch history
@@ -110,8 +110,8 @@ npm run db:seed
 ### 4. Stripe Configuration
 
 1. Create two subscription products in Stripe Dashboard:
-   - Monthly: $29/month
-   - Yearly: $249/year
+   - Weekly: €5/week
+   - Yearly: €99/year
 
 2. Copy the Price IDs to your `.env.local`
 

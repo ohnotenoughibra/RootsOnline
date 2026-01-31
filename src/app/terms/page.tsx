@@ -31,7 +31,7 @@ export default function TermsPage() {
 
           <h2 className="text-xl font-semibold mt-8 mb-4">4. Subscription and Payments</h2>
           <p>
-            Paid subscriptions are billed in advance on a recurring basis (monthly or annually).
+            Paid subscriptions are billed in advance on a recurring basis (weekly or annually).
             You can cancel your subscription at any time, and you will continue to have access
             until the end of your current billing period.
           </p>

@@ -74,7 +74,6 @@ export async function POST(request: Request) {
       email,
       successUrl: `${baseUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${baseUrl}/pricing`,
-      isLifetime: plan === "lifetime",
     });
 
     return NextResponse.json({ url: session.url });

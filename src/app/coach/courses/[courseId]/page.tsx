@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
   Upload,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -103,6 +104,10 @@ export default function EditCoursePage() {
   } | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewingVideo, setPreviewingVideo] = useState<{
+    title: string;
+    videoUrl: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchCourse();
@@ -554,9 +559,24 @@ export default function EditCoursePage() {
                                     {lesson.title}
                                   </span>
                                   {lesson.videoUrl ? (
-                                    <Badge variant="default" className="bg-green-600">
-                                      Video
-                                    </Badge>
+                                    <>
+                                      <Badge variant="default" className="bg-green-600">
+                                        Video
+                                      </Badge>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                        onClick={() =>
+                                          setPreviewingVideo({
+                                            title: lesson.title,
+                                            videoUrl: lesson.videoUrl!,
+                                          })
+                                        }
+                                      >
+                                        <Play className="h-4 w-4" />
+                                      </Button>
+                                    </>
                                   ) : (
                                     <Badge variant="outline" className="text-yellow-600 border-yellow-600">
                                       No Video
@@ -747,6 +767,31 @@ export default function EditCoursePage() {
                 Cancel
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Video Preview Dialog */}
+        <Dialog
+          open={!!previewingVideo}
+          onOpenChange={(open) => !open && setPreviewingVideo(null)}
+        >
+          <DialogContent className="sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle>
+                <Play className="h-4 w-4 inline mr-2" />
+                {previewingVideo?.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              {previewingVideo?.videoUrl && (
+                <video
+                  src={previewingVideo.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full rounded-md aspect-video bg-black"
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
       </div>
