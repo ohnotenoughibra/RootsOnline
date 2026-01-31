@@ -43,10 +43,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    const { plan, withTrial } = await request.json();
+    const { plan, withTrial, promoCode } = await request.json();
 
     if (!plan || !SUBSCRIPTION_PLANS[plan as PlanType]) {
       return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    // Validate promo code if provided
+    let validatedPromo = null;
+    if (promoCode) {
+      const promo = await prisma.promoCode.findUnique({
+        where: { code: promoCode.toUpperCase().trim() },
+      });
+
+      if (promo && promo.isActive) {
+        const now = new Date();
+        const isValid =
+          promo.validFrom <= now &&
+          (!promo.validUntil || promo.validUntil >= now) &&
+          (!promo.maxUses || promo.usedCount < promo.maxUses);
+
+        if (isValid) {
+          validatedPromo = promo;
+        }
+      }
     }
 
     const selectedPlan = SUBSCRIPTION_PLANS[plan as PlanType];
@@ -102,7 +122,20 @@ export async function POST(request: Request) {
       successUrl: `${baseUrl}/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${baseUrl}/pricing`,
       withTrial: eligibleForTrial,
+      discountPercent:
+        validatedPromo?.discountType === "PERCENT"
+          ? validatedPromo.discountAmount
+          : undefined,
+      promoCodeId: validatedPromo?.id,
     });
+
+    // Increment promo code usage
+    if (validatedPromo) {
+      await prisma.promoCode.update({
+        where: { id: validatedPromo.id },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
