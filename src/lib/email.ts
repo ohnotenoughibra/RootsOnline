@@ -18,7 +18,8 @@ export type EmailTemplate =
   | "payment-retry"
   | "trial-ending"
   | "course-completed"
-  | "certificate-earned";
+  | "certificate-earned"
+  | "weekly-digest";
 
 interface SendEmailOptions {
   to: string;
@@ -447,5 +448,88 @@ export function certificateEarnedEmail(data: {
         <p>The ROA Team</p>
       </div>
     `, "Download your certificate of completion"),
+  };
+}
+
+export interface WeeklyDigestData {
+  firstName: string;
+  streakDays: number;
+  lessonsWatched: number;
+  totalWatchTime: string;
+  coursesInProgress: Array<{ title: string; progress: number }>;
+  newCourses: Array<{ title: string; discipline: string }>;
+  nextMilestone?: string;
+}
+
+export function weeklyDigestEmail(data: WeeklyDigestData): { subject: string; html: string } {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://rootsonline.academy";
+  const weekOf = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const courseProgressHtml = data.coursesInProgress.length > 0
+    ? data.coursesInProgress.map(c => `
+        <div style="margin-bottom: 12px;">
+          <p style="margin: 0 0 4px; font-weight: 500;">${c.title}</p>
+          <div style="background: #e4e4e7; border-radius: 9999px; height: 8px; overflow: hidden;">
+            <div style="background: #dc2626; height: 100%; width: ${c.progress}%;"></div>
+          </div>
+          <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">${c.progress}% complete</p>
+        </div>
+      `).join("")
+    : "<p>Start a course to track your progress!</p>";
+
+  const newCoursesHtml = data.newCourses.length > 0
+    ? `
+      <div class="info-box">
+        <h3>New This Week</h3>
+        ${data.newCourses.map(c => `
+          <p style="margin: 8px 0;"><strong>${c.title}</strong> - ${c.discipline}</p>
+        `).join("")}
+      </div>
+    `
+    : "";
+
+  return {
+    subject: `Your Weekly Training Recap - Week of ${weekOf}`,
+    html: generateEmailWrapper(`
+      <div class="content">
+        <h2>Hey ${data.firstName}, here's your week!</h2>
+        <p>Let's see how your training went this past week.</p>
+
+        <div style="display: flex; gap: 16px; margin: 24px 0; text-align: center;">
+          <div style="flex: 1; background: #f4f4f5; padding: 16px; border-radius: 8px;">
+            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #dc2626;">${data.streakDays}</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">Day Streak</p>
+          </div>
+          <div style="flex: 1; background: #f4f4f5; padding: 16px; border-radius: 8px;">
+            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #18181b;">${data.lessonsWatched}</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">Lessons</p>
+          </div>
+          <div style="flex: 1; background: #f4f4f5; padding: 16px; border-radius: 8px;">
+            <p style="margin: 0; font-size: 32px; font-weight: 700; color: #18181b;">${data.totalWatchTime}</p>
+            <p style="margin: 4px 0 0; font-size: 12px; color: #71717a;">Watch Time</p>
+          </div>
+        </div>
+
+        ${data.nextMilestone ? `
+        <div class="info-box" style="background: #fef3c7; border-left: 4px solid #f59e0b;">
+          <h3 style="color: #92400e;">Next Milestone</h3>
+          <p style="color: #92400e; margin: 0;">${data.nextMilestone}</p>
+        </div>
+        ` : ""}
+
+        <h3>Course Progress</h3>
+        ${courseProgressHtml}
+
+        ${newCoursesHtml}
+
+        <a href="${appUrl}/dashboard" class="button">Continue Training</a>
+
+        <p style="font-size: 12px; color: #71717a; margin-top: 24px;">
+          Don't want to receive these updates? <a href="${appUrl}/dashboard/settings" style="color: #dc2626;">Update your preferences</a>
+        </p>
+
+        <p>Keep pushing,<br>The ROA Team</p>
+      </div>
+    `, `${data.lessonsWatched} lessons watched this week!`),
   };
 }

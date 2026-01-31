@@ -7,13 +7,15 @@ import {
   Volume2,
   VolumeX,
   Maximize,
+  Minimize,
   Loader2,
   SkipForward,
   AlertCircle,
   RotateCcw,
   Bookmark,
   StickyNote,
-  X,
+  Settings,
+  Keyboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -97,6 +99,11 @@ export function VideoPlayer({
   const [bookmarkTimestamp, setBookmarkTimestamp] = useState(0);
   const [noteTimestamp, setNoteTimestamp] = useState(0);
 
+  // Video quality and keyboard shortcuts
+  const [videoQuality, setVideoQuality] = useState<string>("auto");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -166,6 +173,123 @@ export function VideoPlayer({
       }
     };
   }, [isPlaying, onProgress]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input/textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      switch (e.key.toLowerCase()) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "f":
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case "m":
+          e.preventDefault();
+          toggleMute();
+          break;
+        case "arrowleft":
+        case "j":
+          e.preventDefault();
+          video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 10 : 5));
+          break;
+        case "arrowright":
+        case "l":
+          e.preventDefault();
+          video.currentTime = Math.min(video.duration, video.currentTime + (e.shiftKey ? 10 : 5));
+          break;
+        case "arrowup":
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.1);
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.1);
+          break;
+        case "0":
+        case "home":
+          e.preventDefault();
+          video.currentTime = 0;
+          break;
+        case "end":
+          e.preventDefault();
+          video.currentTime = video.duration;
+          break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          video.currentTime = (parseInt(e.key) / 10) * video.duration;
+          break;
+        case ",":
+          e.preventDefault();
+          if (video.paused) video.currentTime = Math.max(0, video.currentTime - 0.04);
+          break;
+        case ".":
+          e.preventDefault();
+          if (video.paused) video.currentTime = Math.min(video.duration, video.currentTime + 0.04);
+          break;
+        case "<":
+          e.preventDefault();
+          handleSpeedChange(Math.max(0.25, playbackSpeed - 0.25));
+          break;
+        case ">":
+          e.preventDefault();
+          handleSpeedChange(Math.min(2, playbackSpeed + 0.25));
+          break;
+        case "b":
+          e.preventDefault();
+          openBookmarkDialog();
+          break;
+        case "n":
+          e.preventDefault();
+          openNoteDialog();
+          break;
+        case "?":
+          e.preventDefault();
+          setShowKeyboardHelp((prev) => !prev);
+          break;
+        case "escape":
+          if (showKeyboardHelp) {
+            e.preventDefault();
+            setShowKeyboardHelp(false);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isPlaying, playbackSpeed, openBookmarkDialog, openNoteDialog, showKeyboardHelp]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -534,29 +658,63 @@ export function VideoPlayer({
               </Button>
             )}
 
-            {/* Playback Speed */}
+            {/* Settings (Speed + Quality) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="h-8 text-white hover:bg-white/20 text-xs px-2"
+                  size="icon"
+                  className="h-8 w-8 text-white hover:bg-white/20"
+                  title="Settings"
                 >
-                  {playbackSpeed}x
+                  <Settings className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-0">
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  Playback Speed
+                </div>
                 {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((speed) => (
                   <DropdownMenuItem
                     key={speed}
                     onClick={() => handleSpeedChange(speed)}
                     className={playbackSpeed === speed ? "bg-accent" : ""}
                   >
-                    {speed}x
+                    {speed}x {speed === 1 && "(Normal)"}
+                  </DropdownMenuItem>
+                ))}
+                <div className="my-1 border-t" />
+                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                  Quality
+                </div>
+                {[
+                  { value: "auto", label: "Auto" },
+                  { value: "1080", label: "1080p HD" },
+                  { value: "720", label: "720p" },
+                  { value: "480", label: "480p" },
+                  { value: "360", label: "360p" },
+                ].map((quality) => (
+                  <DropdownMenuItem
+                    key={quality.value}
+                    onClick={() => setVideoQuality(quality.value)}
+                    className={videoQuality === quality.value ? "bg-accent" : ""}
+                  >
+                    {quality.label}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Keyboard shortcuts help */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-white hover:bg-white/20 hidden sm:flex"
+              onClick={() => setShowKeyboardHelp(true)}
+              title="Keyboard shortcuts (?)"
+            >
+              <Keyboard className="h-4 w-4" />
+            </Button>
 
             {/* Next Lesson */}
             {onNextLesson && (
@@ -577,8 +735,13 @@ export function VideoPlayer({
               size="icon"
               className="h-8 w-8 text-white hover:bg-white/20"
               onClick={toggleFullscreen}
+              title={isFullscreen ? "Exit fullscreen (F)" : "Fullscreen (F)"}
             >
-              <Maximize className="h-4 w-4" />
+              {isFullscreen ? (
+                <Minimize className="h-4 w-4" />
+              ) : (
+                <Maximize className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -641,6 +804,79 @@ export function VideoPlayer({
               <Button onClick={handleAddNote} disabled={!noteContent.trim()}>
                 Save Note
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Keyboard Shortcuts Help Dialog */}
+      <Dialog open={showKeyboardHelp} onOpenChange={setShowKeyboardHelp}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Keyboard Shortcuts</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+            <div className="space-y-2">
+              <p className="font-semibold text-muted-foreground mb-3">Playback</p>
+              <div className="flex justify-between">
+                <span>Play/Pause</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">Space</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Rewind 5s</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">J / ←</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Forward 5s</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">L / →</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Rewind 10s</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">Shift+←</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Forward 10s</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">Shift+→</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed down</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">&lt;</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Speed up</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">&gt;</kbd>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <p className="font-semibold text-muted-foreground mb-3">Other</p>
+              <div className="flex justify-between">
+                <span>Fullscreen</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">F</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Mute</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">M</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Volume up</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">↑</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Volume down</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">↓</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Bookmark</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">B</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Note</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">N</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Seek %</span>
+                <kbd className="px-2 py-0.5 bg-muted rounded text-xs">0-9</kbd>
+              </div>
             </div>
           </div>
         </DialogContent>

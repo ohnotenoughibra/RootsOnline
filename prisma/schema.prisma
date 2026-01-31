@@ -59,6 +59,12 @@ model User {
   imageUrl              String?
   role                  Role               @default(STUDENT)
 
+  // Onboarding fields
+  onboardingCompleted   Boolean            @default(false)
+  experienceLevel       String?            // BEGINNER, INTERMEDIATE, ADVANCED
+  trainingGoals         String?            @db.Text // JSON array of goals
+  preferredDisciplines  String?            @db.Text // JSON array of disciplines
+
   // Stripe subscription fields
   stripeCustomerId      String?            @unique
   subscriptionStatus    SubscriptionStatus @default(INACTIVE)
@@ -94,6 +100,14 @@ model User {
   // Learning path and quiz relations
   learningPathEnrollments LearningPathEnrollment[]
   quizAttempts          QuizAttempt[]
+
+  // Push notification subscription
+  pushSubscription      PushSubscription?
+
+  // Affiliate and gift relations
+  affiliate             Affiliate?
+  giftsPurchased        GiftSubscription[] @relation("GiftPurchaser")
+  giftsReceived         GiftSubscription[] @relation("GiftRecipient")
 
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -638,4 +652,112 @@ model QuizAttempt {
 
   @@index([quizId])
   @@index([userId])
+}
+
+// Push notification subscriptions
+model PushSubscription {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint                String   @db.Text
+  p256dh                  String
+  auth                    String
+
+  // Notification preferences
+  newCourseNotifications  Boolean  @default(true)
+  feedbackNotifications   Boolean  @default(true)
+  reminderNotifications   Boolean  @default(true)
+  marketingNotifications  Boolean  @default(false)
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Affiliate program
+model Affiliate {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateCode     String            @unique
+  commissionRate    Int               @default(20) // Percentage
+  status            String            @default("PENDING") // PENDING, ACTIVE, SUSPENDED
+
+  // Payout info
+  paypalEmail       String?
+  bankDetails       String?           @db.Text // Encrypted JSON
+
+  // Stats
+  totalReferrals    Int               @default(0)
+  totalEarnings     Int               @default(0) // In cents
+  pendingPayout     Int               @default(0) // In cents
+  paidOut           Int               @default(0) // In cents
+
+  // Relations
+  conversions       AffiliateConversion[]
+  payouts           AffiliatePayout[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([affiliateCode])
+  @@index([status])
+}
+
+// Track affiliate conversions
+model AffiliateConversion {
+  id                String    @id @default(cuid())
+  affiliateId       String
+  affiliate         Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUserId    String?
+  subscriptionId    String?
+  amount            Int       // Sale amount in cents
+  commission        Int       // Commission earned in cents
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED, REFUNDED
+  approvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([status])
+}
+
+// Affiliate payouts
+model AffiliatePayout {
+  id                String    @id @default(cuid())
+  affiliateId       String
+  affiliate         Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount            Int       // Amount in cents
+  method            String    // PAYPAL, BANK_TRANSFER
+  status            String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  transactionId     String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([status])
+}
+
+// Gift subscriptions
+model GiftSubscription {
+  id                String    @id @default(cuid())
+  purchaserId       String
+  purchaser         User      @relation("GiftPurchaser", fields: [purchaserId], references: [id], onDelete: Cascade)
+  recipientEmail    String
+  recipientId       String?
+  recipient         User?     @relation("GiftRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  message           String?   @db.Text
+  plan              String    // monthly, annual
+  duration          Int       // Duration in months
+  amount            Int       // Price paid in cents
+  giftCode          String    @unique
+  status            String    @default("PENDING") // PENDING, REDEEMED, EXPIRED
+  expiresAt         DateTime
+  redeemedAt        DateTime?
+  stripePaymentId   String?
+  createdAt         DateTime  @default(now())
+
+  @@index([purchaserId])
+  @@index([giftCode])
+  @@index([recipientEmail])
 }

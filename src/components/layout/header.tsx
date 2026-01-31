@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/store/user-store";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navigation = [
   { name: "Courses", href: "/courses", icon: BookOpen },
@@ -70,9 +71,12 @@ export function Header() {
 
             <SheetContent side="right" className="w-[300px] sm:w-[350px]">
               <SheetHeader className="text-left">
-                <SheetTitle className="flex items-center gap-2">
-                  <Dumbbell className="h-6 w-6 text-primary" />
-                  <span>ROA</span>
+                <SheetTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Dumbbell className="h-6 w-6 text-primary" />
+                    <span>ROA</span>
+                  </span>
+                  <ThemeToggle />
                 </SheetTitle>
               </SheetHeader>
 
@@ -201,6 +205,7 @@ export function Header() {
 
         {/* Desktop right section */}
         <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-4">
+          <ThemeToggle />
           <SignedOut>
             <Link href="/sign-in">
               <Button variant="ghost" size="sm">
