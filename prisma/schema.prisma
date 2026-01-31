@@ -40,6 +40,15 @@ enum CourseStatus {
   ARCHIVED
 }
 
+// Content language
+enum Language {
+  EN  // English
+  DE  // German (Deutsch)
+  ES  // Spanish
+  PT  // Portuguese
+  FR  // French
+}
+
 // User model - synced with Clerk
 model User {
   id                    String             @id @default(cuid())
@@ -73,6 +82,10 @@ model User {
   referralsSent         Referral[]         @relation("ReferralSender")
   referredBy            Referral?          @relation("ReferredUser")
 
+  // Gamification relations
+  belts                 UserBelt[]
+  achievements          UserAchievement[]
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -88,6 +101,7 @@ model Course {
   previewVideoUrl String?      // Optional free preview video
 
   discipline      Discipline
+  language        Language     @default(EN)
   status          CourseStatus @default(DRAFT)
   featured        Boolean      @default(false)
 
@@ -107,6 +121,7 @@ model Course {
   publishedAt     DateTime?
 
   @@index([discipline])
+  @@index([language])
   @@index([status])
   @@index([coachId])
 }
@@ -158,6 +173,7 @@ model Lesson {
   // Feature relations
   bookmarks       Bookmark[]
   notes           LessonNote[]
+  tags            LessonTag[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -332,4 +348,103 @@ model Referral {
 
   @@index([referrerId])
   @@index([referralCode])
+}
+
+// Technique tags for lessons
+model TechniqueTag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  discipline  Discipline
+  description String?
+  lessons     LessonTag[]
+  createdAt   DateTime @default(now())
+
+  @@index([discipline])
+}
+
+// Junction table for lesson-technique relationships
+model LessonTag {
+  id          String       @id @default(cuid())
+  lessonId    String
+  lesson      Lesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  tagId       String
+  tag         TechniqueTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+
+  @@unique([lessonId, tagId])
+  @@index([lessonId])
+  @@index([tagId])
+}
+
+// Belt ranks for progression
+enum BeltColor {
+  WHITE
+  BLUE
+  PURPLE
+  BROWN
+  BLACK
+}
+
+model UserBelt {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discipline  Discipline
+  belt        BeltColor  @default(WHITE)
+  stripes     Int        @default(0) // 0-4 stripes per belt
+  awardedAt   DateTime   @default(now())
+  awardedBy   String?    // Coach who awarded the belt
+  notes       String?
+
+  @@unique([userId, discipline])
+  @@index([userId])
+}
+
+// Achievement definitions
+model Achievement {
+  id           String            @id @default(cuid())
+  name         String            @unique
+  slug         String            @unique
+  description  String
+  icon         String            // Emoji or icon name
+  category     String            // STREAK, PROGRESS, SPECIAL
+  requirement  Int               @default(1) // e.g., 7 for 7-day streak
+  points       Int               @default(10)
+  userAchievements UserAchievement[]
+  createdAt    DateTime          @default(now())
+
+  @@index([category])
+}
+
+// User earned achievements
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId String
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+// Promo codes for discounts
+model PromoCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  description     String?
+  discountType    String    @default("PERCENT") // PERCENT or FIXED
+  discountAmount  Int       // Percentage (0-100) or fixed amount in cents
+  maxUses         Int?      // null = unlimited
+  usedCount       Int       @default(0)
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([code])
+  @@index([isActive])
 }

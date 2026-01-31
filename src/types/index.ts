@@ -8,6 +8,7 @@ import type {
   Discipline,
   CourseStatus,
   SubscriptionStatus,
+  Language,
 } from "@prisma/client";
 
 // Re-export Prisma types
@@ -21,6 +22,7 @@ export type {
   Discipline,
   CourseStatus,
   SubscriptionStatus,
+  Language,
 };
 
 // Extended types with relations
@@ -109,6 +111,7 @@ export interface LessonFormData {
 // Search/filter types
 export interface CourseFilters {
   discipline?: Discipline;
+  language?: Language;
   search?: string;
   status?: CourseStatus;
   coachId?: string;

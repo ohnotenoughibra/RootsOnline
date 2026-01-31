@@ -5,7 +5,7 @@ import { Clock, BookOpen, User } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials, getDisciplineLabel } from "@/lib/utils";
+import { getInitials, getDisciplineLabel, getLanguageFlag } from "@/lib/utils";
 import type { CourseWithCoach } from "@/types";
 
 interface CourseCardProps {
@@ -46,12 +46,16 @@ export function CourseCard({
               <BookOpen className="h-12 w-12 text-muted-foreground/50" />
             </div>
           )}
-          <Badge
-            variant={disciplineVariant}
-            className="absolute left-3 top-3"
-          >
-            {getDisciplineLabel(course.discipline)}
-          </Badge>
+          <div className="absolute left-3 top-3 flex gap-2">
+            <Badge variant={disciplineVariant}>
+              {getDisciplineLabel(course.discipline)}
+            </Badge>
+            {course.language && course.language !== "EN" && (
+              <Badge variant="secondary">
+                {getLanguageFlag(course.language)}
+              </Badge>
+            )}
+          </div>
         </div>
 
         <CardContent className="p-4">

@@ -4,22 +4,25 @@ import { Search, BookOpen } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CourseGrid } from "@/components/course/course-grid";
 import { DisciplineFilter } from "@/components/course/discipline-filter";
+import { LanguageFilter } from "@/components/course/language-filter";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import type { Discipline } from "@/types";
+import type { Discipline, Language } from "@/types";
 
 interface CoursesPageProps {
   searchParams: Promise<{
     discipline?: string;
+    language?: string;
     search?: string;
   }>;
 }
 
-async function getCourses(discipline?: string, search?: string) {
+async function getCourses(discipline?: string, language?: string, search?: string) {
   try {
     const where: {
       status: "PUBLISHED";
       discipline?: Discipline;
+      language?: Language;
       OR?: Array<{
         title?: { contains: string; mode: "insensitive" };
         description?: { contains: string; mode: "insensitive" };
@@ -30,6 +33,10 @@ async function getCourses(discipline?: string, search?: string) {
 
     if (discipline && ["MMA", "KICKBOXING", "GRAPPLING"].includes(discipline)) {
       where.discipline = discipline as Discipline;
+    }
+
+    if (language && ["EN", "DE", "ES", "PT", "FR"].includes(language)) {
+      where.language = language as Language;
     }
 
     if (search) {
@@ -71,7 +78,7 @@ async function getCourses(discipline?: string, search?: string) {
 
 export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const params = await searchParams;
-  const courses = await getCourses(params.discipline, params.search);
+  const courses = await getCourses(params.discipline, params.language, params.search);
 
   return (
     <div className="py-12">
@@ -86,9 +93,14 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Suspense fallback={null}>
-            <DisciplineFilter />
-          </Suspense>
+          <div className="flex gap-2">
+            <Suspense fallback={null}>
+              <DisciplineFilter />
+            </Suspense>
+            <Suspense fallback={null}>
+              <LanguageFilter />
+            </Suspense>
+          </div>
 
           <div className="relative flex-1 max-w-sm ml-auto">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

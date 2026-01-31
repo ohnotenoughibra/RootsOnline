@@ -59,3 +59,33 @@ export function getDisciplineColor(discipline: string): string {
   };
   return colors[discipline] || "bg-gray-500";
 }
+
+export function getLanguageLabel(language: string): string {
+  const labels: Record<string, string> = {
+    EN: "English",
+    DE: "Deutsch",
+    ES: "Español",
+    PT: "Português",
+    FR: "Français",
+  };
+  return labels[language] || language;
+}
+
+export function getLanguageFlag(language: string): string {
+  const flags: Record<string, string> = {
+    EN: "🇬🇧",
+    DE: "🇩🇪",
+    ES: "🇪🇸",
+    PT: "🇵🇹",
+    FR: "🇫🇷",
+  };
+  return flags[language] || "🌐";
+}
+
+export const SUPPORTED_LANGUAGES = [
+  { code: "EN", label: "English", flag: "🇬🇧" },
+  { code: "DE", label: "Deutsch", flag: "🇩🇪" },
+  { code: "ES", label: "Español", flag: "🇪🇸" },
+  { code: "PT", label: "Português", flag: "🇵🇹" },
+  { code: "FR", label: "Français", flag: "🇫🇷" },
+] as const;

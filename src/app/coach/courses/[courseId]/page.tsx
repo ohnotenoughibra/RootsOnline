@@ -80,6 +80,7 @@ interface Course {
   description: string;
   shortDescription: string | null;
   discipline: string;
+  language: string;
   status: string;
   coverImage: string | null;
   modules: Module[];
@@ -409,23 +410,46 @@ export default function EditCoursePage() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Discipline</Label>
-                  <Select
-                    value={course.discipline}
-                    onValueChange={(value) =>
-                      handleSaveCourse({ discipline: value } as Partial<Course>)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MMA">MMA</SelectItem>
-                      <SelectItem value="KICKBOXING">Kickboxing</SelectItem>
-                      <SelectItem value="GRAPPLING">Grappling</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Discipline</Label>
+                    <Select
+                      value={course.discipline}
+                      onValueChange={(value) =>
+                        handleSaveCourse({ discipline: value } as Partial<Course>)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MMA">MMA</SelectItem>
+                        <SelectItem value="KICKBOXING">Kickboxing</SelectItem>
+                        <SelectItem value="GRAPPLING">Grappling</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Language</Label>
+                    <Select
+                      value={course.language || "EN"}
+                      onValueChange={(value) =>
+                        handleSaveCourse({ language: value } as Partial<Course>)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="EN">🇬🇧 English</SelectItem>
+                        <SelectItem value="DE">🇩🇪 Deutsch</SelectItem>
+                        <SelectItem value="ES">🇪🇸 Español</SelectItem>
+                        <SelectItem value="PT">🇵🇹 Português</SelectItem>
+                        <SelectItem value="FR">🇫🇷 Français</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
