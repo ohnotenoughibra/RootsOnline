@@ -86,7 +86,8 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error("Failed to start checkout. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to start checkout. Please try again.";
+      toast.error(message);
     } finally {
       setLoading(null);
     }

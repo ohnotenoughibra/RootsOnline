@@ -38,6 +38,14 @@ export async function POST(request: Request) {
     }
 
     const selectedPlan = SUBSCRIPTION_PLANS[plan as PlanType];
+
+    if (!selectedPlan.priceId) {
+      return NextResponse.json(
+        { error: `Price ID not configured for ${plan} plan. Check STRIPE_${plan.toUpperCase()}_PRICE_ID env variable.` },
+        { status: 503 }
+      );
+    }
+
     const email = user.emailAddresses[0].emailAddress;
 
     // Get or create database user
@@ -79,8 +87,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: `Failed to create checkout session: ${errorMessage}` },
       { status: 500 }
     );
   }
