@@ -12,8 +12,10 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "seed": "tsx prisma/seed.ts",
-    "seed:all": "tsx prisma/seed.ts && tsx prisma/seed-courses.ts && tsx prisma/seed-achievements.ts && tsx prisma/seed-grappling.ts"
+    "seed:catalog": "tsx prisma/seed-full-catalog.ts",
+    "seed:achievements": "tsx prisma/seed-achievements.ts",
+    "seed:paths": "tsx prisma/seed-learning-paths.ts",
+    "seed:all": "npm run seed:catalog && npm run seed:achievements && npm run seed:paths"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

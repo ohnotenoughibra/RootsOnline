@@ -17,10 +17,10 @@ export function Footer() {
           {/* Logo & Copyright */}
           <div className="flex items-center gap-4">
             <Link href="/" className="text-lg font-bold">
-              ROA
+              Roots
             </Link>
             <span className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()}
+              &copy; {new Date().getFullYear()} Roots Collective
             </span>
           </div>
 
