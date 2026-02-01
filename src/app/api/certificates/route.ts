@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { randomBytes } from "crypto";
 
 import { prisma } from "@/lib/prisma";
+import { sendEmail, certificateEarnedEmail } from "@/lib/email";
 
 // GET all certificates for current user
 export async function GET() {
@@ -111,8 +113,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    const allLessonIds = course.modules.flatMap((m) =>
-      m.lessons.map((l) => l.id)
+    const allLessonIds = course.modules.flatMap(
+      (m: { lessons: { id: string }[] }) => m.lessons.map((l: { id: string }) => l.id)
     );
 
     const completedLessons = await prisma.lessonProgress.count({
@@ -134,8 +136,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate unique certificate number
-    const certificateNumber = `ROA-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    // Generate unique certificate number with cryptographically secure random
+    const randomPart = randomBytes(4).toString("hex").toUpperCase();
+    const certificateNumber = `ROA-${Date.now()}-${randomPart}`;
 
     const certificate = await prisma.certificate.create({
       data: {
@@ -152,6 +155,16 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Send certificate earned email
+    if (user.email) {
+      const email = certificateEarnedEmail({
+        firstName: user.firstName || "there",
+        courseTitle: certificate.course.title,
+        certificateNumber,
+      });
+      await sendEmail({ to: user.email, ...email });
+    }
 
     return NextResponse.json(certificate, { status: 201 });
   } catch (error) {

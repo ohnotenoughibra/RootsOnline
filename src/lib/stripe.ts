@@ -59,6 +59,8 @@ export async function createCheckoutSession(params: {
   cancelUrl: string;
   isLifetime?: boolean;
   withTrial?: boolean;
+  discountPercent?: number;
+  promoCodeId?: string;
 }) {
   if (!stripe) throw new Error("Stripe is not configured");
 
@@ -77,9 +79,23 @@ export async function createCheckoutSession(params: {
     cancel_url: params.cancelUrl,
     metadata: {
       userId: params.userId,
+      promoCodeId: params.promoCodeId || "",
     },
-    allow_promotion_codes: true,
   };
+
+  // Add custom discount if provided - Stripe doesn't allow both discounts and allow_promotion_codes
+  if (params.discountPercent && params.discountPercent > 0) {
+    // Create a one-time coupon for this checkout
+    const coupon = await stripe.coupons.create({
+      percent_off: params.discountPercent,
+      duration: "once",
+      name: "Promo Code Discount",
+    });
+    sessionParams.discounts = [{ coupon: coupon.id }];
+  } else {
+    // Only enable promotion codes when not applying a custom discount
+    sessionParams.allow_promotion_codes = true;
+  }
 
   // Add trial period if enabled and requested
   if (params.withTrial && FREE_TRIAL_DAYS > 0 && !params.isLifetime) {

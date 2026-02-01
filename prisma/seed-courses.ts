@@ -500,27 +500,45 @@ Entwickle Selbstvertrauen, Fitness und die Grundlagen für fortgeschrittenes Tra
   },
 ];
 
-async function main() {
-  console.log("Creating coach user if not exists...");
+// Real coaches
+const realCoaches = {
+  grappling: { firstName: "Chris", lastName: "Stäringer", email: "chris.staringer@rootsonlineacademy.com" },
+  mma: { firstName: "Lukas", lastName: "Fromm", email: "lukas.fromm@rootsonlineacademy.com" },
+  striking: { firstName: "Sebastian", lastName: "Witschela", email: "sebastian.witschela@rootsonlineacademy.com" },
+};
 
-  // Create or get coach user
+async function getOrCreateCoach(coachData: { firstName: string; lastName: string; email: string }) {
   let coach = await prisma.user.findFirst({
-    where: { role: "COACH" },
+    where: { email: coachData.email },
   });
 
   if (!coach) {
     coach = await prisma.user.create({
       data: {
-        clerkId: "coach_demo_" + Date.now(),
-        email: "coach@rootsonline.com",
-        firstName: "Marcus",
-        lastName: "Silva",
+        clerkId: `coach_${coachData.email.split("@")[0].replace(".", "_")}`,
+        email: coachData.email,
+        firstName: coachData.firstName,
+        lastName: coachData.lastName,
         role: "COACH",
         subscriptionStatus: "ACTIVE",
       },
     });
-    console.log("Created demo coach:", coach.email);
+    console.log(`Created coach: ${coachData.firstName} ${coachData.lastName}`);
   }
+
+  return coach;
+}
+
+async function main() {
+  console.log("Creating coaches if not exists...");
+
+  // Create real coaches
+  const grapplingCoach = await getOrCreateCoach(realCoaches.grappling);
+  const mmaCoach = await getOrCreateCoach(realCoaches.mma);
+  const strikingCoach = await getOrCreateCoach(realCoaches.striking);
+
+  // Use grappling coach as default for these courses (mostly grappling-focused)
+  const coach = grapplingCoach;
 
   console.log("Seeding courses...");
 

@@ -1,10 +1,29 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 
 // POST - validate a promo code
 export async function POST(request: Request) {
   try {
+    // Rate limit to prevent brute-force attacks on promo codes
+    const ip = await getClientIp();
+    const rateLimitResult = await rateLimit(`promo-validate:${ip}`, RATE_LIMITS.strict);
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+            "X-RateLimit-Reset": rateLimitResult.reset.toString(),
+          },
+        }
+      );
+    }
+
     const { code } = await request.json();
 
     if (!code) {

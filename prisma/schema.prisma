@@ -59,6 +59,12 @@ model User {
   imageUrl              String?
   role                  Role               @default(STUDENT)
 
+  // Onboarding fields
+  onboardingCompleted   Boolean            @default(false)
+  experienceLevel       String?            // BEGINNER, INTERMEDIATE, ADVANCED
+  trainingGoals         String?            @db.Text // JSON array of goals
+  preferredDisciplines  String?            @db.Text // JSON array of disciplines
+
   // Stripe subscription fields
   stripeCustomerId      String?            @unique
   subscriptionStatus    SubscriptionStatus @default(INACTIVE)
@@ -85,6 +91,23 @@ model User {
   // Gamification relations
   belts                 UserBelt[]
   achievements          UserAchievement[]
+
+  // Q&A session relations
+  qaSessionsAsStudent   QASession[]        @relation("StudentSessions")
+  qaSessionsAsCoach     QASession[]        @relation("CoachSessions")
+  coachAvailability     CoachAvailability[] @relation("CoachAvailability")
+
+  // Learning path and quiz relations
+  learningPathEnrollments LearningPathEnrollment[]
+  quizAttempts          QuizAttempt[]
+
+  // Push notification subscription
+  pushSubscription      PushSubscription?
+
+  // Affiliate and gift relations
+  affiliate             Affiliate?
+  giftsPurchased        GiftSubscription[] @relation("GiftPurchaser")
+  giftsReceived         GiftSubscription[] @relation("GiftRecipient")
 
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -114,6 +137,7 @@ model Course {
 
   // Feature relations
   certificates    Certificate[]
+  learningPathItems LearningPathItem[]
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -174,6 +198,7 @@ model Lesson {
   bookmarks       Bookmark[]
   notes           LessonNote[]
   tags            LessonTag[]
+  quizzes         Quiz[]
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -274,17 +299,20 @@ model VideoFeedback {
   @@index([coachId])
 }
 
-// Bookmarked lessons
+// Bookmarked lessons with timestamps
 model Bookmark {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonId  String
   lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  timestamp Int?     // Video timestamp in seconds (null for lesson-level bookmark)
+  label     String?  // Optional label/description for the bookmark
   createdAt DateTime @default(now())
 
-  @@unique([userId, lessonId])
   @@index([userId])
+  @@index([lessonId])
+  @@index([userId, lessonId])
 }
 
 // User notes on lessons
@@ -430,6 +458,71 @@ model UserAchievement {
   @@index([userId])
 }
 
+// Coach Q&A session bookings
+enum QASessionStatus {
+  PENDING       // Waiting for coach confirmation
+  CONFIRMED     // Coach confirmed
+  COMPLETED     // Session happened
+  CANCELLED     // Cancelled by either party
+}
+
+model QASession {
+  id            String          @id @default(cuid())
+
+  // Student who booked
+  studentId     String
+  student       User            @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+
+  // Coach who will answer
+  coachId       String
+  coach         User            @relation("CoachSessions", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Session details
+  topic         String          // What they want to discuss
+  questions     String          @db.Text // Pre-submitted questions
+  scheduledAt   DateTime        // When the session is scheduled
+  duration      Int             @default(30) // Duration in minutes (15, 30, 60)
+
+  // Status
+  status        QASessionStatus @default(PENDING)
+
+  // Communication
+  meetingUrl    String?         // Video call link (Zoom, Meet, etc.)
+  notes         String?         @db.Text // Coach notes after session
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([studentId])
+  @@index([coachId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+// Coach availability slots
+model CoachAvailability {
+  id          String   @id @default(cuid())
+  coachId     String
+  coach       User     @relation("CoachAvailability", fields: [coachId], references: [id], onDelete: Cascade)
+
+  // Day and time (recurring weekly)
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime   String   // "09:00" format
+  endTime     String   // "17:00" format
+
+  // Pricing (in cents)
+  price15min  Int      @default(2500)  // €25
+  price30min  Int      @default(4500)  // €45
+  price60min  Int      @default(7500)  // €75
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([coachId, dayOfWeek])
+  @@index([coachId])
+}
+
 // Promo codes for discounts
 model PromoCode {
   id              String    @id @default(cuid())
@@ -447,4 +540,224 @@ model PromoCode {
 
   @@index([code])
   @@index([isActive])
+}
+
+// Learning paths - curated course sequences
+model LearningPath {
+  id              String            @id @default(cuid())
+  title           String
+  slug            String            @unique
+  description     String            @db.Text
+  coverImage      String?
+  discipline      Discipline
+  difficulty      String            @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  estimatedWeeks  Int               @default(4) // Estimated completion time
+  isPublished     Boolean           @default(false)
+
+  // Path items (courses in order)
+  items           LearningPathItem[]
+
+  // User enrollments
+  enrollments     LearningPathEnrollment[]
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([discipline])
+  @@index([isPublished])
+}
+
+// Courses within a learning path
+model LearningPathItem {
+  id              String        @id @default(cuid())
+  learningPathId  String
+  learningPath    LearningPath  @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order           Int           @default(0)
+  isRequired      Boolean       @default(true) // Optional courses for extra credit
+
+  @@unique([learningPathId, courseId])
+  @@index([learningPathId])
+  @@index([courseId])
+}
+
+// User enrollment in learning paths
+model LearningPathEnrollment {
+  id              String        @id @default(cuid())
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  learningPathId  String
+  learningPath    LearningPath  @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  startedAt       DateTime      @default(now())
+  completedAt     DateTime?
+
+  @@unique([userId, learningPathId])
+  @@index([userId])
+  @@index([learningPathId])
+}
+
+// Technique quizzes for lessons
+model Quiz {
+  id              String        @id @default(cuid())
+  lessonId        String
+  lesson          Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  passingScore    Int           @default(70) // Percentage required to pass
+
+  questions       QuizQuestion[]
+  attempts        QuizAttempt[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([lessonId])
+}
+
+model QuizQuestion {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question        String        @db.Text
+  imageUrl        String?       // Optional image for the question
+  order           Int           @default(0)
+
+  options         QuizOption[]
+
+  @@index([quizId])
+}
+
+model QuizOption {
+  id              String        @id @default(cuid())
+  questionId      String
+  question        QuizQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text            String
+  isCorrect       Boolean       @default(false)
+  explanation     String?       // Explanation shown after answering
+
+  @@index([questionId])
+}
+
+model QuizAttempt {
+  id              String        @id @default(cuid())
+  quizId          String
+  quiz            Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score           Int           // Percentage score
+  passed          Boolean
+  answers         String        @db.Text // JSON of answers
+  completedAt     DateTime      @default(now())
+
+  @@index([quizId])
+  @@index([userId])
+}
+
+// Push notification subscriptions
+model PushSubscription {
+  id                      String   @id @default(cuid())
+  userId                  String   @unique
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint                String   @db.Text
+  p256dh                  String
+  auth                    String
+
+  // Notification preferences
+  newCourseNotifications  Boolean  @default(true)
+  feedbackNotifications   Boolean  @default(true)
+  reminderNotifications   Boolean  @default(true)
+  marketingNotifications  Boolean  @default(false)
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Affiliate program
+model Affiliate {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  affiliateCode     String            @unique
+  commissionRate    Int               @default(20) // Percentage
+  status            String            @default("PENDING") // PENDING, ACTIVE, SUSPENDED
+
+  // Payout info
+  paypalEmail       String?
+  bankDetails       String?           @db.Text // Encrypted JSON
+
+  // Stats
+  totalReferrals    Int               @default(0)
+  totalEarnings     Int               @default(0) // In cents
+  pendingPayout     Int               @default(0) // In cents
+  paidOut           Int               @default(0) // In cents
+
+  // Relations
+  conversions       AffiliateConversion[]
+  payouts           AffiliatePayout[]
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([affiliateCode])
+  @@index([status])
+}
+
+// Track affiliate conversions
+model AffiliateConversion {
+  id                String    @id @default(cuid())
+  affiliateId       String
+  affiliate         Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  referredUserId    String?
+  subscriptionId    String?
+  amount            Int       // Sale amount in cents
+  commission        Int       // Commission earned in cents
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED, REFUNDED
+  approvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([status])
+}
+
+// Affiliate payouts
+model AffiliatePayout {
+  id                String    @id @default(cuid())
+  affiliateId       String
+  affiliate         Affiliate @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  amount            Int       // Amount in cents
+  method            String    // PAYPAL, BANK_TRANSFER
+  status            String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  transactionId     String?
+  processedAt       DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([affiliateId])
+  @@index([status])
+}
+
+// Gift subscriptions
+model GiftSubscription {
+  id                String    @id @default(cuid())
+  purchaserId       String
+  purchaser         User      @relation("GiftPurchaser", fields: [purchaserId], references: [id], onDelete: Cascade)
+  recipientEmail    String
+  recipientId       String?
+  recipient         User?     @relation("GiftRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  message           String?   @db.Text
+  plan              String    // monthly, annual
+  duration          Int       // Duration in months
+  amount            Int       // Price paid in cents
+  giftCode          String    @unique
+  status            String    @default("PENDING") // PENDING, REDEEMED, EXPIRED
+  expiresAt         DateTime
+  redeemedAt        DateTime?
+  stripePaymentId   String?
+  createdAt         DateTime  @default(now())
+
+  @@index([purchaserId])
+  @@index([giftCode])
+  @@index([recipientEmail])
 }

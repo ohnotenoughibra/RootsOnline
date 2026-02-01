@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { BookOpen, Clock, Award, Settings, Bookmark, FileText, Users, Flame, Trophy } from "lucide-react";
+import Image from "next/image";
+import { BookOpen, Clock, Award, Settings, Bookmark, FileText, Users, Flame, Trophy, Play, ArrowRight, Sparkles } from "lucide-react";
 
 import { getCurrentUser, hasActiveSubscription } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -144,6 +145,67 @@ export default async function DashboardPage() {
     take: 3,
   });
 
+  // Get "What to learn next" - next unwatched lesson for each course in progress
+  const nextLessons = [];
+  for (const courseId of courseIds.slice(0, 3)) {
+    const course = coursesWithCounts.find((c) => c.id === courseId);
+    if (!course) continue;
+
+    // Get all lessons for this course in order
+    const courseLessons = await prisma.lesson.findMany({
+      where: {
+        module: { courseId },
+        isPublished: true,
+      },
+      include: {
+        module: {
+          select: {
+            title: true,
+            order: true,
+            course: {
+              select: {
+                title: true,
+                slug: true,
+                coverImage: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: [
+        { module: { order: "asc" } },
+        { order: "asc" },
+      ],
+    });
+
+    // Get completed lesson IDs for this course
+    const completedLessonIds = completedProgress
+      .filter((p) => p.lesson.module.courseId === courseId)
+      .map((p) => p.lesson.module.courseId);
+
+    // Find first uncompleted lesson
+    const userLessonProgress = await prisma.lessonProgress.findMany({
+      where: {
+        userId: user.id,
+        lessonId: { in: courseLessons.map((l) => l.id) },
+        completed: true,
+      },
+      select: { lessonId: true },
+    });
+
+    const completedIds = new Set(userLessonProgress.map((p) => p.lessonId));
+    const nextLesson = courseLessons.find((l) => !completedIds.has(l.id));
+
+    if (nextLesson) {
+      nextLessons.push({
+        ...nextLesson,
+        courseName: nextLesson.module.course.title,
+        courseSlug: nextLesson.module.course.slug,
+        courseCover: nextLesson.module.course.coverImage,
+      });
+    }
+  }
+
   return (
     <div className="py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -233,6 +295,57 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* What to Learn Next */}
+        {nextLessons.length > 0 && (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">What to Learn Next</h2>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {nextLessons.map((lesson) => (
+                <Card key={lesson.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="flex">
+                    {/* Thumbnail */}
+                    <div className="w-24 h-24 bg-muted flex-shrink-0 relative">
+                      {lesson.courseCover ? (
+                        <Image
+                          src={lesson.courseCover}
+                          alt={lesson.courseName}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full">
+                          <Play className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
+                      <div>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {lesson.courseName}
+                        </p>
+                        <h3 className="font-medium text-sm line-clamp-2 mt-1">
+                          {lesson.title}
+                        </h3>
+                      </div>
+                      <Link
+                        href={`/courses/${lesson.courseSlug}/learn?lesson=${lesson.id}`}
+                        className="inline-flex items-center text-xs text-primary hover:underline mt-2"
+                      >
+                        Continue learning
+                        <ArrowRight className="h-3 w-3 ml-1" />
+                      </Link>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Quick Access */}
         <div className="grid gap-4 md:grid-cols-4 mb-8">

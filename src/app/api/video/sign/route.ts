@@ -56,6 +56,13 @@ export async function POST(request: Request) {
     // Generate signed URL (valid for 1 hour)
     const signedUrl = generateSignedVideoUrl(publicId, 3600);
 
+    if (!signedUrl) {
+      return NextResponse.json(
+        { error: "Failed to generate video URL. Cloudinary may not be configured." },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ url: signedUrl });
   } catch (error) {
     console.error("Error signing video URL:", error);

@@ -6,6 +6,15 @@ import { Toaster } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { UserProvider } from "@/components/providers/user-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
+import {
+  PostHogProvider,
+  PostHogIdentify,
+  PostHogPageView,
+} from "@/components/providers/posthog-provider";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { OnboardingCheck } from "@/components/onboarding/onboarding-check";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
 
@@ -80,14 +89,28 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={inter.className}>
-          <UserProvider>
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster position="bottom-right" />
-          </UserProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <PostHogProvider>
+              <UserProvider>
+                <PostHogIdentify />
+                <PostHogPageView />
+                <div className="flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+                <Toaster position="bottom-right" />
+                <ServiceWorkerRegister />
+                <InstallPrompt />
+                <OnboardingCheck />
+              </UserProvider>
+            </PostHogProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

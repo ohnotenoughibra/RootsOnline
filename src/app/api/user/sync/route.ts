@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
+import { sendEmail, welcomeEmail } from "@/lib/email";
 
 export async function POST() {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized - not signed in" }, { status: 401 });
@@ -18,6 +19,11 @@ export async function POST() {
     }
 
     const email = clerkUser.emailAddresses[0]?.emailAddress || "";
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
 
     // Upsert user in database
     const user = await prisma.user.upsert({
@@ -38,6 +44,14 @@ export async function POST() {
         subscriptionStatus: "INACTIVE",
       },
     });
+
+    // Send welcome email for new users
+    if (!existingUser && email) {
+      const welcomeEmailContent = welcomeEmail({
+        firstName: clerkUser.firstName || "there",
+      });
+      await sendEmail({ to: email, ...welcomeEmailContent });
+    }
 
     return NextResponse.json({ user, success: true });
   } catch (error) {
