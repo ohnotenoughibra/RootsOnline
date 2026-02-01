@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import {
   Trophy,
   Target,
   Heart,
   Users,
-  Globe,
   ArrowRight,
-  CheckCircle2,
+  MapPin,
+  BookOpen,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,11 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "About Us",
   description:
-    "Learn about Roots Online Academy - our mission to make world-class martial arts instruction accessible to everyone, everywhere.",
+    "Learn about Roots Online Academy - our mission to make quality martial arts instruction accessible to everyone.",
   openGraph: {
     title: "About Us | ROA",
     description:
-      "Learn about Roots Online Academy - our mission to make world-class martial arts instruction accessible to everyone.",
+      "Learn about Roots Online Academy - our mission to make quality martial arts instruction accessible to everyone.",
     url: `${siteConfig.url}/about`,
   },
 };
@@ -31,93 +30,56 @@ const values = [
   {
     icon: Trophy,
     title: "Excellence",
-    description:
-      "We partner only with proven champions and elite instructors who have competed at the highest levels.",
+    description: "We work with proven coaches who have competed at the highest levels.",
   },
   {
     icon: Target,
     title: "Accessibility",
-    description:
-      "World-class instruction shouldn't be limited by geography or budget. We make it available to everyone.",
+    description: "Quality instruction available to everyone, regardless of location.",
   },
   {
     icon: Heart,
     title: "Passion",
-    description:
-      "Every coach on our platform shares a genuine love for teaching and helping students grow.",
+    description: "Every coach shares a genuine love for teaching and helping students grow.",
   },
   {
     icon: Users,
     title: "Community",
-    description:
-      "We're building a global community of martial artists who support and inspire each other.",
-  },
-];
-
-const team = [
-  {
-    name: "Your Name",
-    role: "Founder & CEO",
-    bio: "Former competitive martial artist with a vision to democratize access to elite instruction.",
-    image: null,
-  },
-  {
-    name: "Head Coach",
-    role: "Chief Curriculum Officer",
-    bio: "Multiple-time world champion responsible for course quality and coach selection.",
-    image: null,
-  },
-  {
-    name: "Tech Lead",
-    role: "CTO",
-    bio: "Building the platform that delivers world-class instruction to your screen.",
-    image: null,
+    description: "A global community of martial artists who support and inspire each other.",
   },
 ];
 
 export default function AboutPage() {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-black py-20 lg:py-28">
-        <div className="absolute inset-0 opacity-10" style={{
-          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='white'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e")`
-        }} />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Martial Arts for
-              <span className="block text-primary">Everyone, Everywhere</span>
-            </h1>
-            <p className="mt-6 text-lg text-gray-300">
-              ROA was born from a simple idea: the best martial arts instruction
-              in the world shouldn't be limited to those lucky enough to live
-              near a top gym. We're changing that.
-            </p>
-          </div>
+      {/* Hero Section - Minimal */}
+      <section className="py-24 lg:py-32">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+            About ROA
+          </h1>
+          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+            We believe quality martial arts instruction should be accessible to everyone.
+            From Innsbruck, we're building a platform that connects martial artists worldwide.
+          </p>
         </div>
       </section>
 
-      {/* Community Focus Section */}
-      <section className="py-12 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
-            <div>
-              <Users className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Growing Community</div>
+      {/* Highlights */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Growing Community</span>
             </div>
-            <div>
-              <Trophy className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Elite Coaches</div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">3 Disciplines</span>
             </div>
-            <div>
-              <Target className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">3 Disciplines</div>
-            </div>
-            <div>
-              <Heart className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Based in Innsbruck</div>
+            <div className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Based in Innsbruck</span>
             </div>
           </div>
         </div>
@@ -125,36 +87,26 @@ export default function AboutPage() {
 
       {/* Mission Section */}
       <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 items-center">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Our Mission
-              </h2>
-              <p className="mt-4 text-lg text-muted-foreground">
-                We believe everyone deserves access to quality martial arts
-                instruction - regardless of where they live or their budget.
-              </p>
-              <p className="mt-4 text-muted-foreground">
-                From Innsbruck, we're building a platform that connects martial
-                artists worldwide. Learn together, grow together.
-              </p>
-
-              <div className="mt-8">
-                <Link href="/courses">
-                  <Button size="lg">
-                    Explore Our Courses
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <Globe className="h-32 w-32 text-primary/40" />
-              </div>
-            </div>
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Our Mission
+          </h2>
+          <p className="mt-6 text-muted-foreground">
+            Traditional martial arts education has always been limited by geography.
+            The best coaches are concentrated in major cities, and private instruction
+            is expensive. We're building a solution.
+          </p>
+          <p className="mt-4 text-muted-foreground">
+            By working with elite coaches, we bring their knowledge directly to you
+            through professionally produced video courses. Learn together, grow together.
+          </p>
+          <div className="mt-8">
+            <Link href="/courses">
+              <Button size="lg">
+                Explore Courses
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -163,79 +115,47 @@ export default function AboutPage() {
       <section className="py-20 bg-muted/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Our Values
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              These principles guide everything we do at ROA
-            </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
             {values.map((value) => (
-              <Card key={value.title} className="text-center p-6">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <value.icon className="h-6 w-6 text-primary" />
+              <div key={value.title} className="text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border-2">
+                  <value.icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-4 font-semibold">{value.title}</h3>
+                <h3 className="mt-4 font-medium">{value.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {value.description}
                 </p>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* What We Offer */}
       <section className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Meet the Team
-            </h2>
-            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              The passionate people behind ROA
-            </p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-3 max-w-4xl mx-auto">
-            {team.map((member) => (
-              <Card key={member.name} className="text-center p-6">
-                <div className="mx-auto h-24 w-24 rounded-full bg-muted flex items-center justify-center text-2xl font-bold text-muted-foreground">
-                  {member.name.charAt(0)}
-                </div>
-                <h3 className="mt-4 font-semibold">{member.name}</h3>
-                <p className="text-sm text-primary">{member.role}</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {member.bio}
-                </p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose ROA */}
-      <section className="py-20 bg-muted/30">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Why ROA?
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              What We Offer
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
+          <div className="space-y-4">
             {[
-              "Train at your own pace",
-              "New courses and content weekly",
+              "Train at your own pace, on your schedule",
+              "New courses and content added weekly",
               "Access on any device, anywhere",
               "Structured curriculum from beginner to advanced",
               "Community of dedicated martial artists",
               "Personal feedback from coaches",
             ].map((feature) => (
-              <div key={feature} className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+              <div key={feature} className="flex items-center gap-3 p-4 border rounded-lg">
+                <div className="h-2 w-2 rounded-full bg-foreground shrink-0" />
                 <span>{feature}</span>
               </div>
             ))}
@@ -243,29 +163,24 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Ready to Start Your Journey?
+      {/* CTA Section - Minimal */}
+      <section className="py-20 border-t">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Ready to start?
           </h2>
-          <p className="mt-4 text-lg opacity-90 max-w-2xl mx-auto">
-            Join our growing community of martial artists. Start
-            your 7-day free trial today.
+          <p className="mt-4 text-muted-foreground">
+            Join our growing community of martial artists. Start your free trial today.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/sign-up">
-              <Button size="xl" variant="secondary" className="w-full sm:w-auto">
+              <Button size="xl">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/courses">
-              <Button
-                size="xl"
-                variant="outline"
-                className="w-full sm:w-auto border-white/20 hover:bg-white/10"
-              >
+              <Button size="xl" variant="outline">
                 Browse Courses
               </Button>
             </Link>
