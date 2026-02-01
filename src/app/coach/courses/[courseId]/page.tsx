@@ -14,6 +14,7 @@ import {
   Upload,
   Play,
   HelpCircle,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,6 +55,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { QuizEditor } from "@/components/quiz/quiz-editor";
+import { LessonTags } from "@/components/technique/lesson-tags";
 
 interface Lesson {
   id: string;
@@ -126,6 +128,7 @@ export default function EditCoursePage() {
     moduleId: string;
     lesson: Lesson;
   } | null>(null);
+  const [tagsLesson, setTagsLesson] = useState<Lesson | null>(null);
 
   useEffect(() => {
     fetchCourse();
@@ -693,6 +696,14 @@ export default function EditCoursePage() {
                                     <HelpCircle className="h-4 w-4 mr-1" />
                                     Quiz
                                   </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setTagsLesson(lesson)}
+                                  >
+                                    <Tag className="h-4 w-4 mr-1" />
+                                    Tags
+                                  </Button>
                                   <div className="flex items-center gap-2">
                                     <Switch
                                       checked={lesson.isFreePreview}
@@ -899,6 +910,15 @@ export default function EditCoursePage() {
             lessonTitle={quizEditorLesson.lesson.title}
             open={!!quizEditorLesson}
             onOpenChange={(open) => !open && setQuizEditorLesson(null)}
+          />
+        )}
+
+        {/* Lesson Tags */}
+        {tagsLesson && (
+          <LessonTags
+            lessonId={tagsLesson.id}
+            open={!!tagsLesson}
+            onOpenChange={(open) => !open && setTagsLesson(null)}
           />
         )}
       </div>
