@@ -83,7 +83,16 @@ interface Course {
   language: string;
   status: string;
   coverImage: string | null;
+  coachId: string;
   modules: Module[];
+}
+
+interface Coach {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
 }
 
 export default function EditCoursePage() {
@@ -109,10 +118,26 @@ export default function EditCoursePage() {
     title: string;
     videoUrl: string;
   } | null>(null);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetchCourse();
+    fetchCoaches();
   }, [courseId]);
+
+  const fetchCoaches = async () => {
+    try {
+      const response = await fetch("/api/coaches");
+      if (response.ok) {
+        const data = await response.json();
+        setCoaches(data.coaches);
+        setIsAdmin(true);
+      }
+    } catch {
+      // Not admin, ignore
+    }
+  };
 
   const fetchCourse = async () => {
     try {
@@ -451,6 +476,33 @@ export default function EditCoursePage() {
                     </Select>
                   </div>
                 </div>
+
+                {/* Coach/Owner selector - Admin only */}
+                {isAdmin && coaches.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Course Owner</Label>
+                    <Select
+                      value={course.coachId}
+                      onValueChange={(value) =>
+                        handleSaveCourse({ coachId: value } as Partial<Course>)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select owner" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {coaches.map((coach) => (
+                          <SelectItem key={coach.id} value={coach.id}>
+                            {coach.firstName} {coach.lastName} ({coach.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Transfer ownership to another coach or admin
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label>Short Description</Label>
