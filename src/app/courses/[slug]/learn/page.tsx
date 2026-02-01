@@ -17,7 +17,17 @@ export default function LearnPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   // Subscribe to user state to trigger re-render when user data loads
-  const { user, hasActiveSubscription, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
+
+  // Compute subscription status directly from user object for reactivity
+  const isSubscribed = Boolean(
+    user && (
+      user.role === "COACH" ||
+      user.role === "ADMIN" ||
+      user.subscriptionStatus === "ACTIVE" ||
+      user.subscriptionStatus === "TRIALING"
+    )
+  );
 
   const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -170,8 +180,6 @@ export default function LearnPage() {
     const nextLesson = allLessons[currentIndex + 1];
     return nextLesson && (nextLesson.isFreePreview || isSubscribed);
   };
-
-  const isSubscribed = hasActiveSubscription();
 
   if (loading || userLoading) {
     return (
