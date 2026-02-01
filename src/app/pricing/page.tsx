@@ -30,16 +30,20 @@ export default function PricingPage() {
 
     setValidatingPromo(true);
     try {
-      const res = await fetch("/api/promo-codes/validate", {
+      const res = await fetch("/api/promo/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: promoCode }),
       });
       const data = await res.json();
 
-      if (data.valid) {
-        setPromoData(data);
-        toast.success(`Promo applied: ${data.discountDisplay}`);
+      if (res.ok && data.valid) {
+        const discountDisplay =
+          data.discountType === "PERCENT"
+            ? `${data.discountAmount}% off`
+            : `€${(data.discountAmount / 100).toFixed(2)} off`;
+        setPromoData({ ...data, discountDisplay });
+        toast.success(`Promo applied: ${discountDisplay}`);
       } else {
         toast.error(data.error || "Invalid promo code");
         setPromoData(null);
