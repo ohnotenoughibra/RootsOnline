@@ -29,7 +29,7 @@ export async function GET(
                         title: true,
                         slug: true,
                         discipline: true,
-                        thumbnailUrl: true,
+                        coverImage: true,
                       },
                     },
                   },
@@ -68,7 +68,7 @@ export async function GET(
         title: lt.lesson.module.course.title,
         slug: lt.lesson.module.course.slug,
         discipline: lt.lesson.module.course.discipline,
-        thumbnailUrl: lt.lesson.module.course.thumbnailUrl,
+        coverImage: lt.lesson.module.course.coverImage,
       },
       taggedAt: lt.createdAt,
     }));
