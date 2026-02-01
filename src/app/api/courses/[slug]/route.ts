@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
@@ -8,9 +11,11 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
+    const { userId } = await auth();
 
+    // First, try to find the course (published or draft)
     const course = await prisma.course.findUnique({
-      where: { slug, status: "PUBLISHED" },
+      where: { slug },
       include: {
         coach: {
           select: {
@@ -18,6 +23,7 @@ export async function GET(
             firstName: true,
             lastName: true,
             imageUrl: true,
+            clerkId: true,
           },
         },
         modules: {
@@ -37,6 +43,31 @@ export async function GET(
         { error: "Course not found" },
         { status: 404 }
       );
+    }
+
+    // If course is DRAFT, only allow the owner, coaches, or admins to view
+    if (course.status !== "PUBLISHED") {
+      if (!userId) {
+        return NextResponse.json(
+          { error: "Course not found" },
+          { status: 404 }
+        );
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { clerkId: userId },
+      });
+
+      // Allow if user is the course owner, a coach, or admin
+      const isOwner = course.coach?.clerkId === userId;
+      const isCoachOrAdmin = user?.role === "COACH" || user?.role === "ADMIN";
+
+      if (!isOwner && !isCoachOrAdmin) {
+        return NextResponse.json(
+          { error: "Course not found" },
+          { status: 404 }
+        );
+      }
     }
 
     return NextResponse.json({ course });
