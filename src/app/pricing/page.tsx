@@ -104,27 +104,29 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center py-16">
-      <div className="mx-auto max-w-5xl px-4 w-full">
-        {/* Minimal Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-medium tracking-tight">
-            Simple, transparent pricing
+    <div className="flex flex-col">
+      {/* Hero Section - Minimal */}
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Pricing
           </h1>
-          <p className="mt-3 text-muted-foreground">
-            Start training today. Cancel anytime.
+          <p className="mt-4 text-lg text-muted-foreground">
+            Simple, transparent pricing. Start training today.
           </p>
         </div>
+      </section>
 
-        {/* Promo Code - Minimal */}
-        <div className="max-w-sm mx-auto mb-10">
+      {/* Promo Code Section */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-sm px-4 sm:px-6 lg:px-8 py-6">
           {promoData?.valid ? (
-            <div className="flex items-center justify-center gap-2 py-2 px-4 bg-green-50 dark:bg-green-950/30 rounded-full text-sm">
-              <Tag className="h-4 w-4 text-green-600" />
-              <span className="text-green-700 dark:text-green-400">
+            <div className="flex items-center justify-center gap-2 py-2 px-4 border rounded-full text-sm">
+              <Tag className="h-4 w-4" />
+              <span>
                 {promoData.code}: {promoData.discountDisplay}
               </span>
-              <button onClick={clearPromo} className="ml-1 text-green-600 hover:text-green-800">
+              <button onClick={clearPromo} className="ml-1 hover:text-primary">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -147,107 +149,112 @@ export default function PricingPage() {
             </div>
           )}
         </div>
+      </section>
 
-        {/* Plans - Clean Grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Monthly */}
-          <div className="border rounded-2xl p-8 bg-card hover:shadow-lg transition-shadow">
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Monthly</h3>
-              <p className="text-sm text-muted-foreground mt-1">Flexible, no commitment</p>
+      {/* Plans Section */}
+      <section className="py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Monthly */}
+            <div className="border-2 rounded-lg p-8">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold">Monthly</h3>
+                <p className="text-sm text-muted-foreground mt-1">Flexible, cancel anytime</p>
+              </div>
+
+              <div className="mb-6">
+                {promoData?.valid ? (
+                  <>
+                    <span className="text-4xl font-bold">€{calculatePrice(19.99).toFixed(2)}</span>
+                    <span className="text-muted-foreground line-through ml-2">€19.99</span>
+                  </>
+                ) : (
+                  <span className="text-4xl font-bold">€19.99</span>
+                )}
+                <span className="text-muted-foreground">/month</span>
+              </div>
+
+              <ul className="space-y-3 mb-8 text-sm">
+                {["All courses & tutorials", "Weekly new content", "HD video streaming", "Coach feedback", "Cancel anytime"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                size="lg"
+                onClick={() => handleSubscribe("monthly")}
+                disabled={loading !== null}
+              >
+                {loading === "monthly" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>Get started <ArrowRight className="h-4 w-4 ml-2" /></>
+                )}
+              </Button>
             </div>
 
-            <div className="mb-6">
-              {promoData?.valid ? (
-                <>
-                  <span className="text-3xl font-semibold">€{calculatePrice(19.99).toFixed(2)}</span>
-                  <span className="text-muted-foreground line-through ml-2">€19.99</span>
-                </>
-              ) : (
-                <span className="text-3xl font-semibold">€19.99</span>
-              )}
-              <span className="text-muted-foreground">/month</span>
+            {/* Annual */}
+            <div className="border-2 border-foreground rounded-lg p-8 relative">
+              <div className="absolute -top-3 left-6 bg-foreground text-background text-xs px-3 py-1 rounded-full font-medium">
+                Save 17%
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold">Annual</h3>
+                <p className="text-sm text-muted-foreground mt-1">Best value</p>
+              </div>
+
+              <div className="mb-6">
+                {promoData?.valid ? (
+                  <>
+                    <span className="text-4xl font-bold">€{calculatePrice(199).toFixed(2)}</span>
+                    <span className="text-muted-foreground line-through ml-2">€199</span>
+                  </>
+                ) : (
+                  <span className="text-4xl font-bold">€199</span>
+                )}
+                <span className="text-muted-foreground">/year</span>
+                <p className="text-xs text-muted-foreground mt-1">€16.58/month billed annually</p>
+              </div>
+
+              <ul className="space-y-3 mb-8 text-sm">
+                {["Everything in Monthly", "Priority coach feedback", "Q&A sessions", "Certificates", "Early access"].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-foreground" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                className="w-full"
+                size="lg"
+                onClick={() => handleSubscribe("annual")}
+                disabled={loading !== null}
+              >
+                {loading === "annual" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>Get annual <ArrowRight className="h-4 w-4 ml-2" /></>
+                )}
+              </Button>
             </div>
-
-            <ul className="space-y-3 mb-8 text-sm">
-              {["All courses & tutorials", "Weekly new content", "HD video streaming", "Coach feedback", "Cancel anytime"].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-muted-foreground" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              variant="outline"
-              className="w-full"
-              size="lg"
-              onClick={() => handleSubscribe("monthly")}
-              disabled={loading !== null}
-            >
-              {loading === "monthly" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>Get started <ArrowRight className="h-4 w-4 ml-2" /></>
-              )}
-            </Button>
           </div>
 
-          {/* Annual */}
-          <div className="border-2 border-primary rounded-2xl p-8 bg-card relative hover:shadow-lg transition-shadow">
-            <div className="absolute -top-3 left-6 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full font-medium">
-              Save 17%
-            </div>
-
-            <div className="mb-6">
-              <h3 className="text-lg font-medium">Annual</h3>
-              <p className="text-sm text-muted-foreground mt-1">Best value for serious training</p>
-            </div>
-
-            <div className="mb-6">
-              {promoData?.valid ? (
-                <>
-                  <span className="text-3xl font-semibold">€{calculatePrice(199).toFixed(2)}</span>
-                  <span className="text-muted-foreground line-through ml-2">€199</span>
-                </>
-              ) : (
-                <span className="text-3xl font-semibold">€199</span>
-              )}
-              <span className="text-muted-foreground">/year</span>
-              <p className="text-xs text-muted-foreground mt-1">€16.58/month billed annually</p>
-            </div>
-
-            <ul className="space-y-3 mb-8 text-sm">
-              {["Everything in Monthly", "Priority coach feedback", "Q&A sessions with coaches", "Certificates", "Early access to courses"].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-primary" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={() => handleSubscribe("annual")}
-              disabled={loading !== null}
-            >
-              {loading === "annual" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>Get annual <ArrowRight className="h-4 w-4 ml-2" /></>
-              )}
-            </Button>
-          </div>
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            Secure payment via Stripe. 7-day free trial included.
+          </p>
         </div>
+      </section>
 
-        {/* Trust Line */}
-        <p className="text-center text-sm text-muted-foreground mt-10">
-          Secure payment via Stripe. 7-day money-back guarantee.
-        </p>
-
-        {/* Teams CTA - Minimal */}
-        <div className="mt-16 text-center border-t pt-12">
+      {/* Teams CTA */}
+      <section className="py-12 border-t">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-muted-foreground">
             Training a team or gym?{" "}
             <a
@@ -258,7 +265,7 @@ export default function PricingPage() {
             </a>
           </p>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
