@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, weeklyDigestEmail, isEmailConfigured } from "@/lib/email";
 
+export const dynamic = "force-dynamic";
+
 // Vercel Cron - runs every Sunday at 9am UTC
 // cron: 0 9 * * 0
 
