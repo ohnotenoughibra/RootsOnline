@@ -183,114 +183,6 @@ export function VideoPlayer({
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if typing in input/textarea
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      const video = videoRef.current;
-      if (!video) return;
-
-      switch (e.key.toLowerCase()) {
-        case " ":
-        case "k":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "f":
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case "m":
-          e.preventDefault();
-          toggleMute();
-          break;
-        case "arrowleft":
-        case "j":
-          e.preventDefault();
-          video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 10 : 5));
-          break;
-        case "arrowright":
-        case "l":
-          e.preventDefault();
-          video.currentTime = Math.min(video.duration, video.currentTime + (e.shiftKey ? 10 : 5));
-          break;
-        case "arrowup":
-          e.preventDefault();
-          video.volume = Math.min(1, video.volume + 0.1);
-          break;
-        case "arrowdown":
-          e.preventDefault();
-          video.volume = Math.max(0, video.volume - 0.1);
-          break;
-        case "0":
-        case "home":
-          e.preventDefault();
-          video.currentTime = 0;
-          break;
-        case "end":
-          e.preventDefault();
-          video.currentTime = video.duration;
-          break;
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-          e.preventDefault();
-          video.currentTime = (parseInt(e.key) / 10) * video.duration;
-          break;
-        case ",":
-          e.preventDefault();
-          if (video.paused) video.currentTime = Math.max(0, video.currentTime - 0.04);
-          break;
-        case ".":
-          e.preventDefault();
-          if (video.paused) video.currentTime = Math.min(video.duration, video.currentTime + 0.04);
-          break;
-        case "<":
-          e.preventDefault();
-          handleSpeedChange(Math.max(0.25, playbackSpeed - 0.25));
-          break;
-        case ">":
-          e.preventDefault();
-          handleSpeedChange(Math.min(2, playbackSpeed + 0.25));
-          break;
-        case "b":
-          e.preventDefault();
-          openBookmarkDialog();
-          break;
-        case "n":
-          e.preventDefault();
-          openNoteDialog();
-          break;
-        case "?":
-          e.preventDefault();
-          setShowKeyboardHelp((prev) => !prev);
-          break;
-        case "escape":
-          if (showKeyboardHelp) {
-            e.preventDefault();
-            setShowKeyboardHelp(false);
-          }
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPlaying, playbackSpeed, openBookmarkDialog, openNoteDialog, showKeyboardHelp]);
-
   const togglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -438,6 +330,115 @@ export function VideoPlayer({
     setNoteContent("");
     setShowNoteDialog(true);
   }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in input/textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      switch (e.key.toLowerCase()) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "f":
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case "m":
+          e.preventDefault();
+          toggleMute();
+          break;
+        case "arrowleft":
+        case "j":
+          e.preventDefault();
+          video.currentTime = Math.max(0, video.currentTime - (e.shiftKey ? 10 : 5));
+          break;
+        case "arrowright":
+        case "l":
+          e.preventDefault();
+          video.currentTime = Math.min(video.duration, video.currentTime + (e.shiftKey ? 10 : 5));
+          break;
+        case "arrowup":
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.1);
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.1);
+          break;
+        case "0":
+        case "home":
+          e.preventDefault();
+          video.currentTime = 0;
+          break;
+        case "end":
+          e.preventDefault();
+          video.currentTime = video.duration;
+          break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          video.currentTime = (parseInt(e.key) / 10) * video.duration;
+          break;
+        case ",":
+          e.preventDefault();
+          if (video.paused) video.currentTime = Math.max(0, video.currentTime - 0.04);
+          break;
+        case ".":
+          e.preventDefault();
+          if (video.paused) video.currentTime = Math.min(video.duration, video.currentTime + 0.04);
+          break;
+        case "<":
+          e.preventDefault();
+          handleSpeedChange(Math.max(0.25, playbackSpeed - 0.25));
+          break;
+        case ">":
+          e.preventDefault();
+          handleSpeedChange(Math.min(2, playbackSpeed + 0.25));
+          break;
+        case "b":
+          e.preventDefault();
+          openBookmarkDialog();
+          break;
+        case "n":
+          e.preventDefault();
+          openNoteDialog();
+          break;
+        case "?":
+          e.preventDefault();
+          setShowKeyboardHelp((prev) => !prev);
+          break;
+        case "escape":
+          if (showKeyboardHelp) {
+            e.preventDefault();
+            setShowKeyboardHelp(false);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playbackSpeed, openBookmarkDialog, openNoteDialog, showKeyboardHelp]);
 
   const handleAddNote = async () => {
     if (!lessonId || !noteContent.trim()) {
