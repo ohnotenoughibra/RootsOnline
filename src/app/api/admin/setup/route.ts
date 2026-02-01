@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-// One-time admin setup endpoint
-// Use: POST /api/admin/setup with header X-Setup-Secret
-// After first admin is created, this endpoint is disabled
+// Admin setup endpoint
+// Mode 1 (initial): POST with X-Setup-Secret header to become first admin
+// Mode 2 (promote): POST with { email, role } body when already admin to promote others
 
 export async function POST(request: Request) {
   try {
@@ -17,12 +17,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please sign in first" }, { status: 401 });
     }
 
-    // Check setup secret from header
-    const setupSecret = request.headers.get("x-setup-secret");
-    const expectedSecret = process.env.ADMIN_SETUP_SECRET || "ROA-SETUP-2026";
+    // Get current user
+    const currentUser = await prisma.user.findUnique({
+      where: { clerkId },
+    });
 
-    if (setupSecret !== expectedSecret) {
-      return NextResponse.json({ error: "Invalid setup secret" }, { status: 403 });
+    if (!currentUser) {
+      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
 
     // Check if any admin already exists
@@ -30,34 +31,74 @@ export async function POST(request: Request) {
       where: { role: "ADMIN" },
     });
 
-    if (existingAdmin) {
-      return NextResponse.json(
-        { error: "Admin already exists. This endpoint is disabled." },
-        { status: 400 }
-      );
+    // Mode 1: Initial admin setup (no admin exists yet)
+    if (!existingAdmin) {
+      const setupSecret = request.headers.get("x-setup-secret");
+      const expectedSecret = process.env.ADMIN_SETUP_SECRET || "ROA-SETUP-2026";
+
+      if (setupSecret !== expectedSecret) {
+        return NextResponse.json({ error: "Invalid setup secret" }, { status: 403 });
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: currentUser.id },
+        data: { role: "ADMIN" },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "You are now an admin!",
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          role: updatedUser.role,
+        },
+      });
     }
 
-    // Get current user
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
+    // Mode 2: Admin promoting others (admin already exists)
+    if (currentUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
+    // Parse body for email/role to promote
+    const body = await request.json().catch(() => ({}));
+    const { email, role } = body;
+
+    if (!email) {
+      return NextResponse.json({
+        error: "Admin already exists. To promote users, provide { email, role } in body.",
+        hint: "Valid roles: ADMIN, COACH, STUDENT"
+      }, { status: 400 });
+    }
+
+    const validRoles = ["ADMIN", "COACH", "STUDENT"];
+    const targetRole = role || "ADMIN";
+    if (!validRoles.includes(targetRole)) {
+      return NextResponse.json({ error: "Invalid role. Must be ADMIN, COACH, or STUDENT" }, { status: 400 });
+    }
+
+    const targetUser = await prisma.user.findFirst({
+      where: { email: email.toLowerCase().trim() },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
+    if (!targetUser) {
+      return NextResponse.json({ error: `User not found: ${email}` }, { status: 404 });
     }
 
-    // Promote to admin
     const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: { role: "ADMIN" },
+      where: { id: targetUser.id },
+      data: { role: targetRole },
     });
 
     return NextResponse.json({
       success: true,
-      message: "You are now an admin!",
+      message: `${updatedUser.email} is now ${targetRole}!`,
       user: {
         id: updatedUser.id,
         email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
         role: updatedUser.role,
       },
     });
@@ -70,17 +111,24 @@ export async function POST(request: Request) {
   }
 }
 
-// GET to check setup status
+// GET to check setup status and list admins/coaches
 export async function GET() {
   try {
-    const existingAdmin = await prisma.user.findFirst({
+    const admins = await prisma.user.findMany({
       where: { role: "ADMIN" },
-      select: { email: true },
+      select: { email: true, firstName: true, lastName: true },
+    });
+
+    const coaches = await prisma.user.findMany({
+      where: { role: "COACH" },
+      select: { email: true, firstName: true, lastName: true },
     });
 
     return NextResponse.json({
-      adminExists: !!existingAdmin,
-      setupAvailable: !existingAdmin,
+      adminExists: admins.length > 0,
+      setupAvailable: admins.length === 0,
+      admins,
+      coaches,
     });
   } catch (error) {
     return NextResponse.json({ error: "Database error" }, { status: 500 });

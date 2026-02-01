@@ -2,6 +2,52 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Default Coaches by Discipline
+export const defaultCoaches = {
+  grappling: [
+    { firstName: "Chris", lastName: "Stäringer", email: "chris.staringer@rootsonlineacademy.com" },
+    { firstName: "Ibrahim", lastName: "Allaoui", email: "ibrahim.allaoui@rootsonlineacademy.com" },
+  ],
+  mma: [
+    { firstName: "Lukas", lastName: "Fromm", email: "lukas.fromm@rootsonlineacademy.com" },
+    { firstName: "Johnny", lastName: "Heigl", email: "johnny.heigl@rootsonlineacademy.com" },
+  ],
+  striking: [
+    { firstName: "Sebastian", lastName: "Witschela", email: "sebastian.witschela@rootsonlineacademy.com" },
+    { firstName: "Johnny", lastName: "Heigl", email: "johnny.heigl@rootsonlineacademy.com" }, // Also coaches striking
+  ],
+};
+
+// Function to create or get coaches
+async function getOrCreateCoach(coachData: { firstName: string; lastName: string; email: string }) {
+  let coach = await prisma.user.findFirst({
+    where: { email: coachData.email },
+  });
+
+  if (!coach) {
+    coach = await prisma.user.create({
+      data: {
+        clerkId: `coach_${coachData.email.split("@")[0].replace(".", "_")}`,
+        email: coachData.email,
+        firstName: coachData.firstName,
+        lastName: coachData.lastName,
+        role: "COACH",
+        subscriptionStatus: "ACTIVE",
+      },
+    });
+    console.log(`  👤 Created coach: ${coachData.firstName} ${coachData.lastName}`);
+  } else if (coach.role !== "COACH" && coach.role !== "ADMIN") {
+    // Upgrade to coach if not already
+    coach = await prisma.user.update({
+      where: { id: coach.id },
+      data: { role: "COACH" },
+    });
+    console.log(`  ⬆️ Upgraded to coach: ${coachData.firstName} ${coachData.lastName}`);
+  }
+
+  return coach;
+}
+
 // Comprehensive Grappling Curriculum
 // Organized by difficulty level with progressive learning paths
 
@@ -702,26 +748,41 @@ export async function seedGrapplingCurriculum(coachId: string) {
 
 // Main execution
 async function main() {
-  // Get or create a coach user
-  let coach = await prisma.user.findFirst({
-    where: { role: "COACH" },
-  });
+  console.log("🏋️ Setting up ROA Coaches and Curriculum...\n");
 
-  if (!coach) {
-    console.log("No coach found, creating demo coach...");
-    coach = await prisma.user.create({
-      data: {
-        clerkId: "coach_grappling_demo",
-        email: "coach@rootsonlineacademy.com",
-        firstName: "Marcus",
-        lastName: "Ribeiro",
-        role: "COACH",
-        subscriptionStatus: "ACTIVE",
-      },
-    });
+  // Create all default coaches
+  console.log("📋 Creating/updating coaches...");
+  const grapplingCoaches = [];
+  for (const coachData of defaultCoaches.grappling) {
+    const coach = await getOrCreateCoach(coachData);
+    grapplingCoaches.push(coach);
   }
 
-  await seedGrapplingCurriculum(coach.id);
+  const mmaCoaches = [];
+  for (const coachData of defaultCoaches.mma) {
+    const coach = await getOrCreateCoach(coachData);
+    mmaCoaches.push(coach);
+  }
+
+  const strikingCoaches = [];
+  for (const coachData of defaultCoaches.striking) {
+    const coach = await getOrCreateCoach(coachData);
+    // Avoid duplicates (Johnny Heigl is in both MMA and Striking)
+    if (!strikingCoaches.find(c => c.id === coach.id)) {
+      strikingCoaches.push(coach);
+    }
+  }
+
+  console.log(`\n✅ Coaches ready:`);
+  console.log(`   Grappling: ${grapplingCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
+  console.log(`   MMA: ${mmaCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
+  console.log(`   Striking: ${strikingCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
+
+  // Use first grappling coach (Chris Stäringer) for grappling curriculum
+  const primaryGrapplingCoach = grapplingCoaches[0];
+  console.log(`\n🥋 Using ${primaryGrapplingCoach.firstName} ${primaryGrapplingCoach.lastName} for grappling courses...`);
+
+  await seedGrapplingCurriculum(primaryGrapplingCoach.id);
 }
 
 main()
