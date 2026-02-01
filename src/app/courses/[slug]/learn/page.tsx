@@ -12,6 +12,7 @@ import { UniversalVideoPlayer } from "@/components/video/universal-video-player"
 import { LockedVideo } from "@/components/video/locked-video";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
 import { QuizTaker } from "@/components/quiz/quiz-taker";
+import { DiscussionSection } from "@/components/discussion/discussion-section";
 import { useUserStore } from "@/store/user-store";
 import type { CourseWithModules, Lesson } from "@/types";
 
@@ -331,6 +332,16 @@ export default function LearnPage() {
                   </CardContent>
                 </Card>
               )}
+            </div>
+          )}
+
+          {/* Discussion Section */}
+          {canWatch && currentLesson && (
+            <div className="mt-8">
+              <DiscussionSection
+                courseId={course.id}
+                lessonId={currentLesson.id}
+              />
             </div>
           )}
         </div>
