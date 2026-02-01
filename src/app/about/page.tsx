@@ -54,13 +54,6 @@ const values = [
   },
 ];
 
-const stats = [
-  { value: "50+", label: "Expert Coaches" },
-  { value: "200+", label: "HD Courses" },
-  { value: "10K+", label: "Students Worldwide" },
-  { value: "3", label: "Disciplines" },
-];
-
 const team = [
   {
     name: "Your Name",
@@ -106,16 +99,26 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Community Focus Section */}
       <section className="py-12 bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-4xl font-bold">{stat.value}</div>
-                <div className="mt-1 text-sm opacity-80">{stat.label}</div>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
+            <div>
+              <Users className="h-8 w-8 mx-auto mb-2 opacity-80" />
+              <div className="text-sm opacity-80">Growing Community</div>
+            </div>
+            <div>
+              <Trophy className="h-8 w-8 mx-auto mb-2 opacity-80" />
+              <div className="text-sm opacity-80">Elite Coaches</div>
+            </div>
+            <div>
+              <Target className="h-8 w-8 mx-auto mb-2 opacity-80" />
+              <div className="text-sm opacity-80">3 Disciplines</div>
+            </div>
+            <div>
+              <Heart className="h-8 w-8 mx-auto mb-2 opacity-80" />
+              <div className="text-sm opacity-80">Based in Innsbruck</div>
+            </div>
           </div>
         </div>
       </section>
@@ -256,7 +259,7 @@ export default function AboutPage() {
             Ready to Start Your Journey?
           </h2>
           <p className="mt-4 text-lg opacity-90 max-w-2xl mx-auto">
-            Join thousands of martial artists already training with ROA. Start
+            Join our growing community of martial artists. Start
             your 7-day free trial today.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">

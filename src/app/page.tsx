@@ -51,13 +51,6 @@ const communityFeatures = [
   },
 ];
 
-const stats = [
-  { value: "10K+", label: "Active Members" },
-  { value: "500+", label: "Video Lessons" },
-  { value: "50+", label: "Expert Coaches" },
-  { value: "24/7", label: "Access" },
-];
-
 export default function HomePage() {
   return (
     <div className="flex flex-col">
@@ -88,16 +81,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-y">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0">
-            {stats.map((stat) => (
-              <div key={stat.label} className="py-8 px-6 text-center">
-                <p className="text-3xl font-bold">{stat.value}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
+      {/* Community Highlights */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Growing community of martial artists</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">New content added weekly</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Learn from elite coaches</span>
+            </div>
           </div>
         </div>
       </section>
