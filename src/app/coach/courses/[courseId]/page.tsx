@@ -13,6 +13,7 @@ import {
   EyeOff,
   Upload,
   Play,
+  Euro,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -83,6 +84,7 @@ interface Course {
   language: string;
   status: string;
   coverImage: string | null;
+  price: number | null;
   modules: Module[];
 }
 
@@ -681,6 +683,57 @@ export default function EditCoursePage() {
                     )}
                   </span>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Individual Course Sales Pricing */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Euro className="h-4 w-4" />
+                  Individual Purchase
+                </CardTitle>
+                <CardDescription>
+                  Allow students to buy this course without a subscription
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (EUR)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      €
+                    </span>
+                    <Input
+                      id="price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="49.99"
+                      className="pl-7"
+                      value={course.price ? (course.price / 100).toFixed(2) : ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const cents = value ? Math.round(parseFloat(value) * 100) : null;
+                        setCourse({ ...course, price: cents });
+                      }}
+                      onBlur={() => handleSaveCourse({ price: course.price } as Partial<Course>)}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to disable individual purchases
+                  </p>
+                </div>
+                {course.price && (
+                  <div className="rounded-md bg-muted p-3 text-sm">
+                    <p className="font-medium">
+                      Students can buy this course for €{(course.price / 100).toFixed(2)}
+                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      This gives them permanent access to this course only
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
+import { CoursePurchaseButton } from "@/components/course/course-purchase-button";
 import { getDisciplineLabel, getInitials, formatDuration } from "@/lib/utils";
 import { siteConfig } from "@/lib/site-config";
 
@@ -207,11 +208,20 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     </Button>
                   </Link>
                 ) : user ? (
-                  <Link href="/pricing">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      Subscribe to Access
-                    </Button>
-                  </Link>
+                  <>
+                    <Link href="/pricing">
+                      <Button size="lg" className="w-full sm:w-auto">
+                        Subscribe to Access
+                      </Button>
+                    </Link>
+                    {course.price && (
+                      <CoursePurchaseButton
+                        courseSlug={course.slug}
+                        price={course.price}
+                        className="w-full sm:w-auto"
+                      />
+                    )}
+                  </>
                 ) : (
                   <Link href="/sign-up">
                     <Button size="lg" className="w-full sm:w-auto">

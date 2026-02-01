@@ -135,7 +135,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // For one-time payments (lifetime)
+  // Handle individual course purchase
+  if (session.mode === "payment" && session.metadata?.type === "course_purchase") {
+    const courseId = session.metadata.courseId;
+    if (!courseId) {
+      console.error("No courseId in course purchase metadata");
+      return;
+    }
+
+    // Create the course purchase record
+    await prisma.coursePurchase.create({
+      data: {
+        userId,
+        courseId,
+        amountPaid: session.amount_total || 0,
+        stripePaymentId: session.payment_intent as string,
+      },
+    });
+
+    // Update customer ID if not set
+    await prisma.user.update({
+      where: { id: userId },
+      data: { stripeCustomerId: customerId },
+    });
+
+    console.log(`Course purchase completed: user ${userId}, course ${courseId}`);
+    return;
+  }
+
+  // For other one-time payments (lifetime subscription)
   if (session.mode === "payment") {
     await prisma.user.update({
       where: { id: userId },

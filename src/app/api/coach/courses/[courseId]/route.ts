@@ -95,6 +95,7 @@ export async function PATCH(
       discipline,
       status,
       coverImage,
+      price,
     } = body;
 
     // Build update data
@@ -118,6 +119,7 @@ export async function PATCH(
       updateData.shortDescription = shortDescription;
     if (discipline !== undefined) updateData.discipline = discipline;
     if (coverImage !== undefined) updateData.coverImage = coverImage;
+    if (price !== undefined) updateData.price = price;
 
     if (status !== undefined) {
       updateData.status = status;

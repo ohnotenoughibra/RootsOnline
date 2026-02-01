@@ -101,6 +101,9 @@ model User {
   learningPathEnrollments LearningPathEnrollment[]
   quizAttempts          QuizAttempt[]
 
+  // Course purchases (one-time purchases)
+  coursePurchases       CoursePurchase[]
+
   // Push notification subscription
   pushSubscription      PushSubscription?
 
@@ -128,6 +131,10 @@ model Course {
   status          CourseStatus @default(DRAFT)
   featured        Boolean      @default(false)
 
+  // Pricing - for individual course sales (in cents EUR)
+  price           Int?         // One-time purchase price in cents (e.g., 4999 = €49.99)
+  stripePriceId   String?      // Stripe Price ID for one-time purchase
+
   // Coach/Creator relation
   coachId         String
   coach           User         @relation("CourseCreator", fields: [coachId], references: [id], onDelete: Cascade)
@@ -138,6 +145,7 @@ model Course {
   // Feature relations
   certificates    Certificate[]
   learningPathItems LearningPathItem[]
+  purchases       CoursePurchase[]
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -148,6 +156,27 @@ model Course {
   @@index([language])
   @@index([status])
   @@index([coachId])
+}
+
+// Individual course purchase tracking
+model CoursePurchase {
+  id                String   @id @default(cuid())
+
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId          String
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Payment details
+  amountPaid        Int      // Amount in cents EUR
+  stripePaymentId   String?  // Stripe PaymentIntent ID
+
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 // Module model - sections within a course

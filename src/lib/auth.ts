@@ -72,6 +72,39 @@ export async function hasActiveSubscription(): Promise<boolean> {
   return activeStatuses.includes(user.subscriptionStatus);
 }
 
+// Check if user can access a specific course (subscription OR individual purchase)
+export async function canAccessCourse(courseId: string): Promise<boolean> {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return false;
+  }
+
+  // Coaches and admins always have full access
+  const privilegedRoles: Role[] = ["COACH", "ADMIN"];
+  if (privilegedRoles.includes(user.role)) {
+    return true;
+  }
+
+  // Check active subscription
+  const activeStatuses: SubscriptionStatus[] = ["ACTIVE", "TRIALING"];
+  if (activeStatuses.includes(user.subscriptionStatus)) {
+    return true;
+  }
+
+  // Check individual course purchase
+  const purchase = await prisma.coursePurchase.findUnique({
+    where: {
+      userId_courseId: {
+        userId: user.id,
+        courseId,
+      },
+    },
+  });
+
+  return !!purchase;
+}
+
 // Check if user is a coach
 export async function isCoach(): Promise<boolean> {
   const user = await getCurrentUser();

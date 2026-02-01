@@ -35,11 +35,12 @@ export default function LearnPage() {
   const [loading, setLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(false);
   const [startTime, setStartTime] = useState(0);
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   const slug = params.slug as string;
   const lessonId = searchParams.get("lesson");
 
-  // Fetch course data
+  // Fetch course data and check purchase status
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -57,6 +58,13 @@ export default function LearnPage() {
 
         if (initialLesson) {
           setCurrentLesson(initialLesson);
+        }
+
+        // Check if user has purchased this course
+        const purchaseResponse = await fetch(`/api/courses/${slug}/purchase`);
+        if (purchaseResponse.ok) {
+          const purchaseData = await purchaseResponse.json();
+          setHasPurchased(purchaseData.purchased);
         }
       } catch (error) {
         console.error("Error fetching course:", error);
@@ -150,6 +158,9 @@ export default function LearnPage() {
     }
   };
 
+  // User has access via subscription or course purchase
+  const hasAccess = isSubscribed || hasPurchased;
+
   const handleNextLesson = () => {
     if (!course || !currentLesson) return;
 
@@ -158,7 +169,7 @@ export default function LearnPage() {
     const nextLesson = allLessons[currentIndex + 1];
 
     if (nextLesson) {
-      const isNextAccessible = nextLesson.isFreePreview || isSubscribed;
+      const isNextAccessible = nextLesson.isFreePreview || hasAccess;
       if (isNextAccessible) {
         handleLessonClick(nextLesson.id);
       }
@@ -171,7 +182,7 @@ export default function LearnPage() {
     const allLessons = course.modules.flatMap((m) => m.lessons);
     const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
     const nextLesson = allLessons[currentIndex + 1];
-    return nextLesson && (nextLesson.isFreePreview || isSubscribed);
+    return nextLesson && (nextLesson.isFreePreview || hasAccess);
   };
 
   if (loading || userLoading) {
@@ -186,27 +197,11 @@ export default function LearnPage() {
     return null;
   }
 
-  const canWatch = currentLesson?.isFreePreview || isSubscribed;
-
-  // DEBUG: Temporary debug info - remove after fixing
-  const debugInfo = {
-    userExists: !!user,
-    userRole: user?.role,
-    subscriptionStatus: user?.subscriptionStatus,
-    isSubscribed,
-    canWatch,
-    userLoading,
-  };
-  console.log("[LearnPage Debug]", debugInfo);
+  // User can watch if: free preview OR has subscription OR purchased this course
+  const canWatch = currentLesson?.isFreePreview || hasAccess;
 
   return (
     <div className="min-h-screen bg-background">
-      {/* DEBUG BANNER - Remove after fixing */}
-      {process.env.NODE_ENV !== "production" || true ? (
-        <div className="bg-yellow-100 text-yellow-800 text-xs p-2 text-center">
-          Debug: role={user?.role || "null"} | sub={user?.subscriptionStatus || "null"} | isSubscribed={String(isSubscribed)} | canWatch={String(canWatch)}
-        </div>
-      ) : null}
       {/* Top bar */}
       <div className="border-b bg-card">
         <div className="flex items-center gap-4 px-4 py-3">
@@ -264,7 +259,7 @@ export default function LearnPage() {
           <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem)]">
             <CourseCurriculum
               modules={course.modules}
-              isSubscribed={isSubscribed}
+              isSubscribed={hasAccess}
               onLessonClick={handleLessonClick}
               currentLessonId={currentLesson?.id}
             />
