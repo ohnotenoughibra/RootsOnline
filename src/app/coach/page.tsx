@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Plus, BookOpen, Users, Eye, AlertCircle, TrendingUp, PlayCircle } from "lucide-react";
 
-import { getCurrentUser, isCoach } from "@/lib/auth";
+import { getCurrentUser, isCoach, isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,10 +39,20 @@ export default async function CoachDashboardPage() {
       );
     }
 
-    // Get coach's courses
+    // Admins can see all courses, coaches only see their own
+    const userIsAdmin = await isAdmin();
+
+    // Get courses (all for admin, own for coach)
     const courses = await prisma.course.findMany({
-      where: { coachId: user.id },
+      where: userIsAdmin ? {} : { coachId: user.id },
       include: {
+        coach: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
         _count: {
           select: {
             modules: true,

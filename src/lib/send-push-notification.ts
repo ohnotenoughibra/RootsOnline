@@ -5,12 +5,24 @@ import { prisma } from "./prisma";
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 
-if (vapidPublicKey && vapidPrivateKey) {
-  webpush.setVapidDetails(
-    "mailto:support@rootsonlineacademy.com",
-    vapidPublicKey,
-    vapidPrivateKey
-  );
+// Only configure web-push if valid VAPID keys are provided
+// VAPID private key should be 32 bytes (43 base64 chars without padding)
+const isPushConfigured =
+  vapidPublicKey &&
+  vapidPrivateKey &&
+  vapidPrivateKey.length >= 40 &&
+  !vapidPrivateKey.includes("xxxxx");
+
+if (isPushConfigured) {
+  try {
+    webpush.setVapidDetails(
+      "mailto:support@rootsonlineacademy.com",
+      vapidPublicKey!,
+      vapidPrivateKey!
+    );
+  } catch (error) {
+    console.warn("Failed to configure web-push VAPID details:", error);
+  }
 }
 
 export interface PushNotificationPayload {
@@ -38,6 +50,11 @@ export async function sendPushNotificationToUser(
   payload: PushNotificationPayload,
   notificationType: NotificationType
 ): Promise<boolean> {
+  // Skip if push notifications are not configured
+  if (!isPushConfigured) {
+    return false;
+  }
+
   try {
     const subscription = await prisma.pushSubscription.findUnique({
       where: { userId },
