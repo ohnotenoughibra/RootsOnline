@@ -81,6 +81,26 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Community Highlights */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Growing community of martial artists</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">New content added weekly</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">Learn from elite coaches</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Disciplines Section - Minimal */}
       <section className="py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
