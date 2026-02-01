@@ -24,10 +24,13 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const isAdmin = user.role === "ADMIN";
+
+    // Admins can access any course, coaches only their own
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
-        coachId: user.id,
+        ...(isAdmin ? {} : { coachId: user.id }),
       },
       include: {
         modules: {
@@ -75,11 +78,13 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify ownership
+    const isAdmin = user.role === "ADMIN";
+
+    // Verify ownership (admins can edit any course)
     const existingCourse = await prisma.course.findFirst({
       where: {
         id: courseId,
-        coachId: user.id,
+        ...(isAdmin ? {} : { coachId: user.id }),
       },
     });
 
@@ -93,8 +98,10 @@ export async function PATCH(
       description,
       shortDescription,
       discipline,
+      language,
       status,
       coverImage,
+      coachId: newCoachId,
     } = body;
 
     // Build update data
@@ -117,7 +124,13 @@ export async function PATCH(
     if (shortDescription !== undefined)
       updateData.shortDescription = shortDescription;
     if (discipline !== undefined) updateData.discipline = discipline;
+    if (language !== undefined) updateData.language = language;
     if (coverImage !== undefined) updateData.coverImage = coverImage;
+
+    // Only admins can change course ownership
+    if (newCoachId !== undefined && isAdmin) {
+      updateData.coachId = newCoachId;
+    }
 
     if (status !== undefined) {
       updateData.status = status;
@@ -171,11 +184,13 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify ownership
+    const isAdmin = user.role === "ADMIN";
+
+    // Verify ownership (admins can delete any course)
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
-        coachId: user.id,
+        ...(isAdmin ? {} : { coachId: user.id }),
       },
     });
 

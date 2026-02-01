@@ -95,50 +95,61 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
   const courses = await getCourses(params.discipline, params.language, params.search);
 
   return (
-    <div className="py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">All Courses</h1>
-          <p className="mt-2 text-muted-foreground">
-            Browse our complete library of martial arts courses
+    <div className="flex flex-col">
+      {/* Hero Section - Minimal */}
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Courses
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+            Browse our library of martial arts courses
           </p>
         </div>
+      </section>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="flex gap-2">
+      {/* Filters Section */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="flex gap-2">
+              <Suspense fallback={null}>
+                <DisciplineFilter />
+              </Suspense>
+              <Suspense fallback={null}>
+                <LanguageFilter />
+              </Suspense>
+            </div>
             <Suspense fallback={null}>
-              <DisciplineFilter />
-            </Suspense>
-            <Suspense fallback={null}>
-              <LanguageFilter />
+              <CourseSearch />
             </Suspense>
           </div>
-
-          <Suspense fallback={null}>
-            <CourseSearch />
-          </Suspense>
         </div>
+      </section>
 
-        {/* Results */}
-        {courses.length === 0 ? (
-          <Card className="p-12 text-center">
-            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold">No courses yet</h3>
-            <p className="text-muted-foreground mt-2">
-              Courses will appear here once coaches start publishing content.
-            </p>
-          </Card>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-6">
-              {courses.length} course{courses.length !== 1 ? "s" : ""} found
-            </p>
-            <CourseGrid courses={courses} />
-          </>
-        )}
-      </div>
+      {/* Results Section */}
+      <section className="py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {courses.length === 0 ? (
+            <div className="py-20 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 mb-6">
+                <BookOpen className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold">No courses yet</h3>
+              <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+                Courses will appear here once coaches start publishing content.
+              </p>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground mb-8">
+                {courses.length} course{courses.length !== 1 ? "s" : ""} found
+              </p>
+              <CourseGrid courses={courses} />
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

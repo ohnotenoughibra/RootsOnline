@@ -2,15 +2,29 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Loader2 } from "lucide-react";
+import { ChevronLeft, Loader2, HelpCircle, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { UniversalVideoPlayer } from "@/components/video/universal-video-player";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { MultiAnglePlayer } from "@/components/video/multi-angle-player";
 import { LockedVideo } from "@/components/video/locked-video";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
+import { QuizTaker } from "@/components/quiz/quiz-taker";
+import { DiscussionSection } from "@/components/discussion/discussion-section";
 import { useUserStore } from "@/store/user-store";
 import type { CourseWithModules, Lesson } from "@/types";
+
+interface LessonQuiz {
+  id: string;
+  title: string;
+  description?: string;
+  passingScore: number;
+  questionCount: number;
+  bestScore?: number;
+  hasPassed?: boolean;
+}
 
 export default function LearnPage() {
   const params = useParams();
@@ -19,21 +33,29 @@ export default function LearnPage() {
   // Subscribe to user state to trigger re-render when user data loads
   const { user, isLoading: userLoading } = useUserStore();
 
+  const [course, setCourse] = useState<CourseWithModules | null>(null);
+
   // Compute subscription status directly from user object for reactivity
+  // Also check if user is the course owner
+  const isCourseOwner = Boolean(
+    user && course?.coach?.id && user.id === course.coach.id
+  );
+
   const isSubscribed = Boolean(
     user && (
-      user.role === "COACH" ||
       user.role === "ADMIN" ||
+      user.role === "COACH" ||
+      isCourseOwner ||
       user.subscriptionStatus === "ACTIVE" ||
       user.subscriptionStatus === "TRIALING"
     )
   );
-
-  const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [lessonQuizzes, setLessonQuizzes] = useState<LessonQuiz[]>([]);
+  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
 
   const slug = params.slug as string;
   const lessonId = searchParams.get("lesson");
@@ -74,6 +96,39 @@ export default function LearnPage() {
       setVideoUrl(currentLesson.videoUrl || null);
     }
   }, [currentLesson]);
+
+  // Fetch quizzes for the current lesson
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      if (!currentLesson || !isSubscribed) {
+        setLessonQuizzes([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/lessons/${currentLesson.id}/quizzes`);
+        if (response.ok) {
+          const data = await response.json();
+          setLessonQuizzes(data.quizzes);
+        }
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      }
+    };
+
+    fetchQuizzes();
+    setActiveQuiz(null);
+  }, [currentLesson, isSubscribed]);
+
+  const handleQuizComplete = (passed: boolean, score: number) => {
+    // Refresh quizzes to update best score
+    if (currentLesson) {
+      fetch(`/api/lessons/${currentLesson.id}/quizzes`)
+        .then((res) => res.json())
+        .then((data) => setLessonQuizzes(data.quizzes))
+        .catch(console.error);
+    }
+  };
 
   const handleLessonClick = (lessonId: string) => {
     if (!course) return;
@@ -188,11 +243,11 @@ export default function LearnPage() {
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : canWatch && videoUrl ? (
-            <UniversalVideoPlayer
-              src={videoUrl}
-              title={currentLesson?.title}
-              lessonId={currentLesson?.id}
+          ) : canWatch && currentLesson ? (
+            <MultiAnglePlayer
+              lessonId={currentLesson.id}
+              defaultVideoUrl={videoUrl || undefined}
+              title={currentLesson.title}
               onProgress={handleProgress}
               onComplete={handleComplete}
               onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
@@ -210,6 +265,83 @@ export default function LearnPage() {
                   {currentLesson.description}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Quiz Section */}
+          {canWatch && lessonQuizzes.length > 0 && (
+            <div className="mt-8">
+              {activeQuiz ? (
+                <div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setActiveQuiz(null)}
+                    className="mb-4"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Back to Lesson
+                  </Button>
+                  <QuizTaker
+                    quizId={activeQuiz}
+                    onComplete={handleQuizComplete}
+                  />
+                </div>
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <HelpCircle className="h-5 w-5" />
+                      Knowledge Check
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {lessonQuizzes.map((quiz) => (
+                      <div
+                        key={quiz.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          {quiz.hasPassed ? (
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                          )}
+                          <div>
+                            <h4 className="font-medium">{quiz.title}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {quiz.questionCount} questions • Pass: {quiz.passingScore}%
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {quiz.bestScore !== undefined && (
+                            <Badge variant={quiz.hasPassed ? "default" : "secondary"}>
+                              Best: {quiz.bestScore}%
+                            </Badge>
+                          )}
+                          <Button
+                            size="sm"
+                            onClick={() => setActiveQuiz(quiz.id)}
+                          >
+                            {quiz.hasPassed ? "Retake" : "Start"}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Discussion Section */}
+          {canWatch && currentLesson && (
+            <div className="mt-8">
+              <DiscussionSection
+                courseId={course.id}
+                lessonId={currentLesson.id}
+              />
             </div>
           )}
         </div>

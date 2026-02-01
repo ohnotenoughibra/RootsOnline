@@ -109,6 +109,10 @@ model User {
   giftsPurchased        GiftSubscription[] @relation("GiftPurchaser")
   giftsReceived         GiftSubscription[] @relation("GiftRecipient")
 
+  // Discussion relations
+  discussions           Discussion[]       @relation("DiscussionAuthor")
+  discussionReplies     DiscussionReply[]  @relation("ReplyAuthor")
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -760,4 +764,82 @@ model GiftSubscription {
   @@index([purchaserId])
   @@index([giftCode])
   @@index([recipientEmail])
+}
+
+// Discussion threads for courses/lessons
+model Discussion {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+
+  // Author
+  authorId    String
+  author      User      @relation("DiscussionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Context - can be attached to a course or specific lesson
+  courseId    String?
+  lessonId    String?
+
+  // Flags
+  isPinned    Boolean   @default(false)
+  isLocked    Boolean   @default(false)
+
+  // Stats
+  viewCount   Int       @default(0)
+
+  // Replies
+  replies     DiscussionReply[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([authorId])
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+// Multi-angle video links for lessons
+model VideoAngle {
+  id            String   @id @default(cuid())
+  lessonId      String
+  angleLabel    String   // "Main", "Overhead", "Detail", "Slow Motion", etc.
+  videoUrl      String
+  videoPublicId String?
+  videoDuration Int?
+  order         Int      @default(0)
+  isDefault     Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([lessonId])
+}
+
+// Replies to discussions
+model DiscussionReply {
+  id            String     @id @default(cuid())
+  content       String     @db.Text
+
+  // Author
+  authorId      String
+  author        User       @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Parent discussion
+  discussionId  String
+  discussion    Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  // For threaded replies (optional parent reply)
+  parentId      String?
+  parent        DiscussionReply?  @relation("ReplyThread", fields: [parentId], references: [id], onDelete: Cascade)
+  children      DiscussionReply[] @relation("ReplyThread")
+
+  // Flags
+  isCoachAnswer Boolean   @default(false) // Marked as official coach answer
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([authorId])
+  @@index([discussionId])
+  @@index([parentId])
 }
