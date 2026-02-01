@@ -6,7 +6,7 @@ import { sendEmail, welcomeEmail } from "@/lib/email";
 
 export async function POST() {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized - not signed in" }, { status: 401 });
