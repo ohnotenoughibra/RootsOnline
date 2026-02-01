@@ -53,6 +53,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { QuizEditor } from "@/components/quiz/quiz-editor";
+import { LessonTags } from "@/components/technique/lesson-tags";
+import { AngleManager } from "@/components/video/angle-manager";
 
 interface Lesson {
   id: string;
@@ -88,6 +91,14 @@ interface Course {
   modules: Module[];
 }
 
+interface Coach {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
+
 export default function EditCoursePage() {
   const params = useParams();
   const router = useRouter();
@@ -111,10 +122,35 @@ export default function EditCoursePage() {
     title: string;
     videoUrl: string;
   } | null>(null);
+  const [coaches, setCoaches] = useState<Coach[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [quizEditorLesson, setQuizEditorLesson] = useState<{
+    moduleId: string;
+    lesson: Lesson;
+  } | null>(null);
+  const [tagsLesson, setTagsLesson] = useState<Lesson | null>(null);
+  const [anglesLesson, setAnglesLesson] = useState<{
+    moduleId: string;
+    lesson: Lesson;
+  } | null>(null);
 
   useEffect(() => {
     fetchCourse();
+    fetchCoaches();
   }, [courseId]);
+
+  const fetchCoaches = async () => {
+    try {
+      const response = await fetch("/api/coaches");
+      if (response.ok) {
+        const data = await response.json();
+        setCoaches(data.coaches);
+        setIsAdmin(true);
+      }
+    } catch {
+      // Not admin, ignore
+    }
+  };
 
   const fetchCourse = async () => {
     try {
@@ -276,8 +312,8 @@ export default function EditCoursePage() {
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("Video must be less than 100MB");
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("Video must be less than 500MB");
       return;
     }
 
@@ -454,6 +490,33 @@ export default function EditCoursePage() {
                   </div>
                 </div>
 
+                {/* Coach/Owner selector - Admin only */}
+                {isAdmin && coaches.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Course Owner</Label>
+                    <Select
+                      value={course.coachId}
+                      onValueChange={(value) =>
+                        handleSaveCourse({ coachId: value } as Partial<Course>)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select owner" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {coaches.map((coach) => (
+                          <SelectItem key={coach.id} value={coach.id}>
+                            {coach.firstName} {coach.lastName} ({coach.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Transfer ownership to another coach or admin
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label>Short Description</Label>
                   <Input
@@ -623,6 +686,40 @@ export default function EditCoursePage() {
                                   >
                                     <Upload className="h-4 w-4 mr-1" />
                                     {lesson.videoUrl ? "Replace" : "Upload"}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setQuizEditorLesson({
+                                        moduleId: module.id,
+                                        lesson,
+                                      })
+                                    }
+                                  >
+                                    <HelpCircle className="h-4 w-4 mr-1" />
+                                    Quiz
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setTagsLesson(lesson)}
+                                  >
+                                    <Tag className="h-4 w-4 mr-1" />
+                                    Tags
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setAnglesLesson({
+                                        moduleId: module.id,
+                                        lesson,
+                                      })
+                                    }
+                                  >
+                                    <Camera className="h-4 w-4 mr-1" />
+                                    Angles
                                   </Button>
                                   <div className="flex items-center gap-2">
                                     <Switch
@@ -822,7 +919,7 @@ export default function EditCoursePage() {
                       <Upload className="h-10 w-10 text-muted-foreground mb-3" />
                       <span className="text-sm font-medium">Click to upload video</span>
                       <span className="text-xs text-muted-foreground mt-1">
-                        MP4, MOV, or WebM (max 100MB)
+                        MP4, MOV, or WebM (max 500MB)
                       </span>
                       <input
                         type="file"
@@ -871,6 +968,39 @@ export default function EditCoursePage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Quiz Editor */}
+        {quizEditorLesson && (
+          <QuizEditor
+            courseId={courseId}
+            moduleId={quizEditorLesson.moduleId}
+            lessonId={quizEditorLesson.lesson.id}
+            lessonTitle={quizEditorLesson.lesson.title}
+            open={!!quizEditorLesson}
+            onOpenChange={(open) => !open && setQuizEditorLesson(null)}
+          />
+        )}
+
+        {/* Lesson Tags */}
+        {tagsLesson && (
+          <LessonTags
+            lessonId={tagsLesson.id}
+            open={!!tagsLesson}
+            onOpenChange={(open) => !open && setTagsLesson(null)}
+          />
+        )}
+
+        {/* Video Angles */}
+        {anglesLesson && (
+          <AngleManager
+            courseId={courseId}
+            moduleId={anglesLesson.moduleId}
+            lessonId={anglesLesson.lesson.id}
+            lessonTitle={anglesLesson.lesson.title}
+            open={!!anglesLesson}
+            onOpenChange={(open) => !open && setAnglesLesson(null)}
+          />
+        )}
       </div>
     </div>
   );

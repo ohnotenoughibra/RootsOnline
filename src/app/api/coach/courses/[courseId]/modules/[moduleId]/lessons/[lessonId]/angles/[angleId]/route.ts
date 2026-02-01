@@ -3,15 +3,16 @@ import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 
+// Update a video angle
 export async function PATCH(
   request: Request,
   {
     params,
-  }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> }
+  }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string; angleId: string }> }
 ) {
   try {
     const { userId } = await auth();
-    const { courseId, moduleId, lessonId } = await params;
+    const { courseId, lessonId, angleId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,7 +28,7 @@ export async function PATCH(
 
     const isAdmin = user.role === "ADMIN";
 
-    // Verify course ownership (admins can access any course)
+    // Verify course ownership
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
@@ -40,51 +41,49 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const {
-      title,
-      description,
-      videoUrl,
-      videoPublicId,
-      videoDuration,
-      isFreePreview,
-      isPublished,
-      order,
-    } = body;
+    const { angleLabel, videoUrl, videoPublicId, videoDuration, isDefault, order } = body;
+
+    // If setting as default, unset other defaults
+    if (isDefault) {
+      await prisma.videoAngle.updateMany({
+        where: { lessonId, id: { not: angleId } },
+        data: { isDefault: false },
+      });
+    }
 
     const updateData: Record<string, unknown> = {};
-    if (title !== undefined) updateData.title = title;
-    if (description !== undefined) updateData.description = description;
+    if (angleLabel !== undefined) updateData.angleLabel = angleLabel;
     if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
     if (videoPublicId !== undefined) updateData.videoPublicId = videoPublicId;
     if (videoDuration !== undefined) updateData.videoDuration = videoDuration;
-    if (isFreePreview !== undefined) updateData.isFreePreview = isFreePreview;
-    if (isPublished !== undefined) updateData.isPublished = isPublished;
+    if (isDefault !== undefined) updateData.isDefault = isDefault;
     if (order !== undefined) updateData.order = order;
 
-    const lesson = await prisma.lesson.update({
-      where: { id: lessonId },
+    const angle = await prisma.videoAngle.update({
+      where: { id: angleId },
       data: updateData,
     });
 
-    return NextResponse.json({ lesson });
+    return NextResponse.json({ angle });
   } catch (error) {
-    console.error("Error updating lesson:", error);
+    console.error("Error updating video angle:", error);
     return NextResponse.json(
-      { error: "Failed to update lesson" },
+      { error: "Failed to update video angle" },
       { status: 500 }
     );
   }
 }
 
+// Delete a video angle
 export async function DELETE(
   request: Request,
   {
     params,
-  }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> }
+  }: { params: Promise<{ courseId: string; moduleId: string; lessonId: string; angleId: string }> }
 ) {
   try {
     const { userId } = await auth();
-    const { courseId, lessonId } = await params;
+    const { courseId, angleId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -100,7 +99,7 @@ export async function DELETE(
 
     const isAdmin = user.role === "ADMIN";
 
-    // Verify course ownership (admins can access any course)
+    // Verify course ownership
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
@@ -112,15 +111,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    await prisma.lesson.delete({
-      where: { id: lessonId },
+    await prisma.videoAngle.delete({
+      where: { id: angleId },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting lesson:", error);
+    console.error("Error deleting video angle:", error);
     return NextResponse.json(
-      { error: "Failed to delete lesson" },
+      { error: "Failed to delete video angle" },
       { status: 500 }
     );
   }

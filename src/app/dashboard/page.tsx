@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import Image from "next/image";
-import { BookOpen, Clock, Award, Settings, Bookmark, FileText, Users, Flame, Trophy, Play, ArrowRight, Sparkles } from "lucide-react";
+import { BookOpen, Clock, Award, Settings, Bookmark, FileText, Users, Flame, Trophy, Play, ArrowRight, Sparkles, DollarSign } from "lucide-react";
 
 import { getCurrentUser, hasActiveSubscription } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -400,6 +400,20 @@ export default async function DashboardPage() {
                 <div>
                   <p className="font-medium">Refer Friends</p>
                   <p className="text-sm text-muted-foreground">Earn €20</p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/affiliate">
+            <Card className="p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                  <DollarSign className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-medium">Affiliate Program</p>
+                  <p className="text-sm text-muted-foreground">Earn 20%</p>
                 </div>
               </div>
             </Card>

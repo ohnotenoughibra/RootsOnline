@@ -44,9 +44,9 @@ export default function UploadFootagePage() {
       return;
     }
 
-    // Check file size (max 100MB)
-    if (file.size > 100 * 1024 * 1024) {
-      setError("Video must be less than 100MB");
+    // Check file size (max 500MB)
+    if (file.size > 500 * 1024 * 1024) {
+      setError("Video must be less than 500MB");
       return;
     }
 
@@ -227,7 +227,7 @@ export default function UploadFootagePage() {
                         Click to upload video
                       </span>
                       <span className="text-xs text-muted-foreground mt-1">
-                        MP4, MOV, or WebM (max 100MB)
+                        MP4, MOV, or WebM (max 500MB)
                       </span>
                       <input
                         type="file"
