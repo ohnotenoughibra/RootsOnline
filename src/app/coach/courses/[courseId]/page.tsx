@@ -274,8 +274,8 @@ export default function EditCoursePage() {
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("Video must be less than 100MB");
+    if (file.size > 500 * 1024 * 1024) {
+      toast.error("Video must be less than 500MB");
       return;
     }
 
@@ -769,7 +769,7 @@ export default function EditCoursePage() {
                       <Upload className="h-10 w-10 text-muted-foreground mb-3" />
                       <span className="text-sm font-medium">Click to upload video</span>
                       <span className="text-xs text-muted-foreground mt-1">
-                        MP4, MOV, or WebM (max 100MB)
+                        MP4, MOV, or WebM (max 500MB)
                       </span>
                       <input
                         type="file"
