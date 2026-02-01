@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   creator: siteConfig.creator,
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "de_DE",
     url: siteConfig.url,
     title: siteConfig.name,
     description: siteConfig.description,
@@ -87,7 +87,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="de" suppressHydrationWarning>
         <body className={inter.className}>
           <ThemeProvider
             attribute="class"
