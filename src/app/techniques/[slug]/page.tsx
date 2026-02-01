@@ -1,266 +1,221 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Loader2,
-  Tag,
-  PlayCircle,
-  Clock,
-  Lock,
-  Eye,
-} from "lucide-react";
+import { ChevronLeft, Play, Clock, BookOpen } from "lucide-react";
 
+import { prisma } from "@/lib/prisma";
+import { hasActiveSubscription } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { useUserStore } from "@/store/user-store";
+import { getDisciplineLabel, formatDuration } from "@/lib/utils";
 
-interface TechniqueLesson {
-  id: string;
-  lesson: {
-    id: string;
-    title: string;
-    description?: string;
-    videoDuration?: number;
-    isFreePreview: boolean;
-    module: {
-      title: string;
-      course: {
-        id: string;
-        slug: string;
-        title: string;
-        discipline: string;
-      };
-    };
-  };
+interface TechniquePageProps {
+  params: Promise<{ slug: string }>;
 }
 
-interface Technique {
-  id: string;
-  name: string;
-  slug: string;
-  discipline: string;
-  description?: string;
-  lessons: TechniqueLesson[];
+async function getTechnique(slug: string) {
+  const technique = await prisma.techniqueTag.findUnique({
+    where: { slug },
+    include: {
+      lessons: {
+        include: {
+          lesson: {
+            include: {
+              module: {
+                include: {
+                  course: {
+                    select: {
+                      id: true,
+                      title: true,
+                      slug: true,
+                      status: true,
+                      coach: {
+                        select: {
+                          firstName: true,
+                          lastName: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return technique;
 }
 
-const disciplineLabels: Record<string, string> = {
-  MMA: "MMA",
-  KICKBOXING: "Kickboxing",
-  GRAPPLING: "Grappling",
-};
-
-function formatDuration(seconds?: number): string {
-  if (!seconds) return "";
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
-}
-
-export default function TechniquePage() {
-  const params = useParams();
-  const router = useRouter();
-  const slug = params.slug as string;
-  const { user } = useUserStore();
-
-  const [technique, setTechnique] = useState<Technique | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const isSubscribed = Boolean(
-    user &&
-      (user.role === "ADMIN" ||
-        user.role === "COACH" ||
-        user.subscriptionStatus === "ACTIVE" ||
-        user.subscriptionStatus === "TRIALING")
-  );
-
-  useEffect(() => {
-    fetchTechnique();
-  }, [slug]);
-
-  const fetchTechnique = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/techniques/${slug}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          router.push("/techniques");
-          return;
-        }
-        throw new Error("Failed to fetch technique");
-      }
-      const data = await response.json();
-      setTechnique(data.technique);
-    } catch (error) {
-      console.error("Error fetching technique:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+export default async function TechniquePage({ params }: TechniquePageProps) {
+  const { slug } = await params;
+  const technique = await getTechnique(slug);
 
   if (!technique) {
-    return null;
+    notFound();
   }
 
+  const isSubscribed = await hasActiveSubscription();
+
+  // Filter to only show lessons from published courses
+  const lessons = technique.lessons
+    .filter((lt) => lt.lesson.module.course.status === "PUBLISHED")
+    .map((lt) => ({
+      ...lt.lesson,
+      course: lt.lesson.module.course,
+    }));
+
   // Group lessons by course
-  const lessonsByCourse = technique.lessons.reduce<
-    Record<string, { course: TechniqueLesson["lesson"]["module"]["course"]; lessons: TechniqueLesson[] }>
-  >((acc, item) => {
-    const courseId = item.lesson.module.course.id;
+  const lessonsByCourse = lessons.reduce((acc, lesson) => {
+    const courseId = lesson.course.id;
     if (!acc[courseId]) {
       acc[courseId] = {
-        course: item.lesson.module.course,
+        course: lesson.course,
         lessons: [],
       };
     }
-    acc[courseId].lessons.push(item);
+    acc[courseId].lessons.push(lesson);
     return acc;
-  }, {});
+  }, {} as Record<string, { course: typeof lessons[0]["course"]; lessons: typeof lessons }>);
+
+  const courseGroups = Object.values(lessonsByCourse);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="border-b">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-          <Link
-            href="/techniques"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to Technique Library
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Link href="/techniques">
+            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white mb-4">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Back to Techniques
+            </Button>
           </Link>
 
-          <div className="flex items-start gap-4">
-            <div className="h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Tag className="h-7 w-7 text-primary" />
-            </div>
-            <div>
-              <Badge variant="secondary" className="mb-2">
-                {disciplineLabels[technique.discipline] || technique.discipline}
-              </Badge>
-              <h1 className="text-3xl font-bold tracking-tight lg:text-4xl">
-                {technique.name}
-              </h1>
-              {technique.description && (
-                <p className="mt-3 text-lg text-muted-foreground max-w-3xl">
-                  {technique.description}
-                </p>
-              )}
-              <div className="flex items-center gap-2 mt-4">
-                <PlayCircle className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">
-                  {technique.lessons.length} lessons cover this technique
-                </span>
-              </div>
-            </div>
+          <Badge variant={technique.discipline.toLowerCase() as "mma" | "kickboxing" | "grappling"} className="mb-4">
+            {getDisciplineLabel(technique.discipline)}
+          </Badge>
+
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            {technique.name}
+          </h1>
+
+          {technique.description && (
+            <p className="mt-4 text-lg text-gray-300 max-w-2xl">
+              {technique.description}
+            </p>
+          )}
+
+          <div className="mt-6 flex items-center gap-4 text-sm text-gray-300">
+            <span className="flex items-center gap-1">
+              <Play className="h-4 w-4" />
+              {lessons.length} lessons
+            </span>
+            <span className="flex items-center gap-1">
+              <BookOpen className="h-4 w-4" />
+              {courseGroups.length} courses
+            </span>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Lessons */}
-      <section className="py-12 lg:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {technique.lessons.length === 0 ? (
-            <div className="text-center py-16">
-              <PlayCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold">No lessons yet</h2>
-              <p className="text-muted-foreground mt-2">
-                Lessons covering this technique will be added soon
+      {/* Content */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        {lessons.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h2 className="text-xl font-semibold mb-2">Coming Soon</h2>
+              <p className="text-muted-foreground">
+                We&apos;re working on adding lessons for this technique.
+                Check back soon!
               </p>
-            </div>
-          ) : (
-            <div className="space-y-12">
-              {Object.values(lessonsByCourse).map(({ course, lessons }) => (
-                <div key={course.id}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h2 className="text-xl font-semibold">{course.title}</h2>
-                      <p className="text-sm text-muted-foreground">
-                        {lessons.length} lesson{lessons.length !== 1 ? "s" : ""} in this course
-                      </p>
-                    </div>
-                    <Link href={`/courses/${course.slug}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Course
-                      </Button>
-                    </Link>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-8">
+            {courseGroups.map(({ course, lessons }) => (
+              <div key={course.id}>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-xl font-bold">{course.title}</h2>
+                    <p className="text-sm text-muted-foreground">
+                      by {course.coach.firstName} {course.coach.lastName}
+                    </p>
                   </div>
+                  <Link href={`/courses/${course.slug}`}>
+                    <Button variant="outline" size="sm">
+                      View Course
+                    </Button>
+                  </Link>
+                </div>
 
-                  <div className="space-y-3">
-                    {lessons.map((item) => {
-                      const lesson = item.lesson;
-                      const canAccess = lesson.isFreePreview || isSubscribed;
+                <div className="grid gap-3">
+                  {lessons.map((lesson) => {
+                    const canWatch = lesson.isFreePreview || isSubscribed;
 
-                      return (
-                        <Card key={item.id}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                                {canAccess ? (
-                                  <PlayCircle className="h-5 w-5 text-primary" />
-                                ) : (
-                                  <Lock className="h-5 w-5 text-muted-foreground" />
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-medium truncate">
-                                    {lesson.title}
-                                  </h3>
-                                  {lesson.isFreePreview && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Free
-                                    </Badge>
+                    return (
+                      <Link
+                        key={lesson.id}
+                        href={canWatch ? `/courses/${course.slug}/learn?lesson=${lesson.id}` : `/courses/${course.slug}`}
+                      >
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="py-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${canWatch ? "bg-primary/10" : "bg-muted"}`}>
+                                  <Play className={`h-4 w-4 ${canWatch ? "text-primary" : "text-muted-foreground"}`} />
+                                </div>
+                                <div>
+                                  <h3 className="font-medium">{lesson.title}</h3>
+                                  {lesson.description && (
+                                    <p className="text-sm text-muted-foreground line-clamp-1">
+                                      {lesson.description}
+                                    </p>
                                   )}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  {lesson.module.title}
-                                </p>
                               </div>
-                              {lesson.videoDuration && (
-                                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                  <Clock className="h-4 w-4" />
-                                  {formatDuration(lesson.videoDuration)}
-                                </div>
-                              )}
-                              <Link
-                                href={
-                                  canAccess
-                                    ? `/courses/${course.slug}/learn?lesson=${lesson.id}`
-                                    : `/courses/${course.slug}`
-                                }
-                              >
-                                <Button
-                                  variant={canAccess ? "default" : "outline"}
-                                  size="sm"
-                                >
-                                  {canAccess ? "Watch" : "Subscribe"}
-                                </Button>
-                              </Link>
+                              <div className="flex items-center gap-3">
+                                {lesson.isFreePreview && (
+                                  <Badge variant="secondary">Free</Badge>
+                                )}
+                                {lesson.videoDuration && (
+                                  <span className="text-sm text-muted-foreground flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {formatDuration(lesson.videoDuration)}
+                                  </span>
+                                )}
+                                {!canWatch && (
+                                  <Badge variant="outline">Premium</Badge>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
-                      );
-                    })}
-                  </div>
+                      </Link>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Subscribe CTA for non-subscribers */}
+        {!isSubscribed && lessons.length > 0 && (
+          <div className="mt-12 rounded-xl border bg-card p-8 text-center">
+            <h2 className="text-2xl font-bold mb-2">Unlock All Lessons</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Subscribe to access all {lessons.length} lessons covering {technique.name} and our entire technique library.
+            </p>
+            <Link href="/pricing">
+              <Button size="lg">View Plans</Button>
+            </Link>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

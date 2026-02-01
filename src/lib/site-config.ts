@@ -1,15 +1,15 @@
 export const siteConfig = {
-  name: "ROA - Roots Online Academy",
-  shortName: "ROA",
+  name: "Roots Collective",
+  shortName: "Roots",
   description:
-    "World-class martial arts instruction from elite coaches. Learn MMA, Kickboxing, Grappling, and BJJ from anywhere in the world.",
-  url: process.env.NEXT_PUBLIC_APP_URL || "https://rootsonline.academy",
+    "Learn MMA, kickboxing, and grappling from coaches who care. We're a group of friends growing the martial arts community together.",
+  url: process.env.NEXT_PUBLIC_APP_URL || "https://rootscollective.at",
   ogImage: "/og-image.jpg",
   links: {
-    instagram: "https://instagram.com/rootsonline",
-    youtube: "https://youtube.com/@rootsonline",
+    instagram: "https://instagram.com/rootscollective_ibk",
+    youtube: "https://youtube.com/@rootscollective",
   },
-  creator: "Roots Online Academy",
+  creator: "Roots Collective",
   keywords: [
     "martial arts",
     "MMA",

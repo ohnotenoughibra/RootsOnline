@@ -101,6 +101,9 @@ model User {
   learningPathEnrollments LearningPathEnrollment[]
   quizAttempts          QuizAttempt[]
 
+  // Course purchases (one-time purchases)
+  coursePurchases       CoursePurchase[]
+
   // Push notification subscription
   pushSubscription      PushSubscription?
 
@@ -109,9 +112,8 @@ model User {
   giftsPurchased        GiftSubscription[] @relation("GiftPurchaser")
   giftsReceived         GiftSubscription[] @relation("GiftRecipient")
 
-  // Discussion relations
-  discussions           Discussion[]       @relation("DiscussionAuthor")
-  discussionReplies     DiscussionReply[]  @relation("ReplyAuthor")
+  // Instructor certification applications
+  certificationApplications CertificationApplication[]
 
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -132,6 +134,10 @@ model Course {
   status          CourseStatus @default(DRAFT)
   featured        Boolean      @default(false)
 
+  // Pricing - for individual course sales (in cents EUR)
+  price           Int?         // One-time purchase price in cents (e.g., 4999 = €49.99)
+  stripePriceId   String?      // Stripe Price ID for one-time purchase
+
   // Coach/Creator relation
   coachId         String
   coach           User         @relation("CourseCreator", fields: [coachId], references: [id], onDelete: Cascade)
@@ -142,6 +148,7 @@ model Course {
   // Feature relations
   certificates    Certificate[]
   learningPathItems LearningPathItem[]
+  purchases       CoursePurchase[]
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -152,6 +159,27 @@ model Course {
   @@index([language])
   @@index([status])
   @@index([coachId])
+}
+
+// Individual course purchase tracking
+model CoursePurchase {
+  id                String   @id @default(cuid())
+
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId          String
+  course            Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Payment details
+  amountPaid        Int      // Amount in cents EUR
+  stripePaymentId   String?  // Stripe PaymentIntent ID
+
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 // Module model - sections within a course
@@ -766,80 +794,95 @@ model GiftSubscription {
   @@index([recipientEmail])
 }
 
-// Discussion threads for courses/lessons
-model Discussion {
-  id          String    @id @default(cuid())
-  title       String
-  content     String    @db.Text
-
-  // Author
-  authorId    String
-  author      User      @relation("DiscussionAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-
-  // Context - can be attached to a course or specific lesson
-  courseId    String?
-  lessonId    String?
-
-  // Flags
-  isPinned    Boolean   @default(false)
-  isLocked    Boolean   @default(false)
-
-  // Stats
-  viewCount   Int       @default(0)
-
-  // Replies
-  replies     DiscussionReply[]
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([authorId])
-  @@index([courseId])
-  @@index([lessonId])
+// Instructor Certification Programs
+enum CertificationLevel {
+  LEVEL_1  // Foundational - can assist in classes
+  LEVEL_2  // Intermediate - can lead beginner classes
+  LEVEL_3  // Advanced - can teach all levels
+  MASTER   // Master instructor - can certify others
 }
 
-// Multi-angle video links for lessons
-model VideoAngle {
-  id            String   @id @default(cuid())
-  lessonId      String
-  angleLabel    String   // "Main", "Overhead", "Detail", "Slow Motion", etc.
-  videoUrl      String
-  videoPublicId String?
-  videoDuration Int?
-  order         Int      @default(0)
-  isDefault     Boolean  @default(false)
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([lessonId])
+enum CertificationStatus {
+  PENDING     // Application submitted
+  IN_REVIEW   // Being reviewed by admin
+  APPROVED    // Certification granted
+  REJECTED    // Application rejected
+  EXPIRED     // Certification expired
 }
 
-// Replies to discussions
-model DiscussionReply {
-  id            String     @id @default(cuid())
-  content       String     @db.Text
+model InstructorCertification {
+  id                String              @id @default(cuid())
+  title             String              // "Level 1 Grappling Instructor"
+  slug              String              @unique
+  description       String              @db.Text
+  discipline        Discipline
+  level             CertificationLevel
 
-  // Author
-  authorId      String
-  author        User       @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  // Requirements
+  requiredCourseIds String?             @db.Text // JSON array of required course IDs
+  requiredWatchHours Int                @default(0) // Minimum hours of content watched
+  minimumQuizScore  Int                 @default(80) // Minimum passing score (percentage)
 
-  // Parent discussion
-  discussionId  String
-  discussion    Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  // Certification details
+  validityMonths    Int                 @default(24) // How long certification is valid
+  price             Int                 @default(0)  // Application fee in cents (0 = free)
 
-  // For threaded replies (optional parent reply)
-  parentId      String?
-  parent        DiscussionReply?  @relation("ReplyThread", fields: [parentId], references: [id], onDelete: Cascade)
-  children      DiscussionReply[] @relation("ReplyThread")
+  isActive          Boolean             @default(true)
 
-  // Flags
-  isCoachAnswer Boolean   @default(false) // Marked as official coach answer
+  // Relations
+  applications      CertificationApplication[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
-  @@index([authorId])
-  @@index([discussionId])
-  @@index([parentId])
+  @@index([discipline])
+  @@index([level])
+}
+
+model CertificationApplication {
+  id                    String                  @id @default(cuid())
+
+  // Applicant
+  userId                String
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Certification being applied for
+  certificationId       String
+  certification         InstructorCertification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  // Application details
+  status                CertificationStatus     @default(PENDING)
+
+  // Progress tracking (stored as JSON for flexibility)
+  completedCourseIds    String?                 @db.Text // JSON array
+  watchedHours          Float                   @default(0)
+  quizScores            String?                 @db.Text // JSON object {quizId: score}
+
+  // Supporting documents
+  resumeUrl             String?
+  videoSubmissionUrl    String?                 // Technique demonstration video
+  additionalNotes       String?                 @db.Text
+
+  // Review process
+  reviewerId            String?                 // Admin/coach who reviewed
+  reviewNotes           String?                 @db.Text
+  reviewedAt            DateTime?
+
+  // Certificate details (if approved)
+  certificateNumber     String?                 @unique
+  issuedAt              DateTime?
+  expiresAt             DateTime?
+  pdfUrl                String?                 // Generated certificate PDF
+
+  // Payment (if applicable)
+  stripePaymentId       String?
+  amountPaid            Int                     @default(0)
+
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  @@unique([userId, certificationId])
+  @@index([userId])
+  @@index([certificationId])
+  @@index([status])
 }

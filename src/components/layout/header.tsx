@@ -30,7 +30,7 @@ export function Header() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold tracking-tight">
-          ROA
+          Roots
         </Link>
 
         {/* Desktop navigation */}

@@ -101,7 +101,7 @@ export async function PATCH(
       language,
       status,
       coverImage,
-      coachId: newCoachId,
+      price,
     } = body;
 
     // Build update data
@@ -126,6 +126,7 @@ export async function PATCH(
     if (discipline !== undefined) updateData.discipline = discipline;
     if (language !== undefined) updateData.language = language;
     if (coverImage !== undefined) updateData.coverImage = coverImage;
+    if (price !== undefined) updateData.price = price;
 
     // Only admins can change course ownership
     if (newCoachId !== undefined && isAdmin) {

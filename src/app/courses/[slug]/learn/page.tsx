@@ -54,13 +54,13 @@ export default function LearnPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(false);
-  const [lessonQuizzes, setLessonQuizzes] = useState<LessonQuiz[]>([]);
-  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
+  const [startTime, setStartTime] = useState(0);
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   const slug = params.slug as string;
   const lessonId = searchParams.get("lesson");
 
-  // Fetch course data
+  // Fetch course data and check purchase status
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -79,6 +79,13 @@ export default function LearnPage() {
         if (initialLesson) {
           setCurrentLesson(initialLesson);
         }
+
+        // Check if user has purchased this course
+        const purchaseResponse = await fetch(`/api/courses/${slug}/purchase`);
+        if (purchaseResponse.ok) {
+          const purchaseData = await purchaseResponse.json();
+          setHasPurchased(purchaseData.purchased);
+        }
       } catch (error) {
         console.error("Error fetching course:", error);
         router.push("/courses");
@@ -90,12 +97,35 @@ export default function LearnPage() {
     fetchCourse();
   }, [slug, lessonId, router]);
 
-  // Set video URL when lesson changes - use direct URL from Cloudinary
+  // Set video URL and fetch progress when lesson changes
   useEffect(() => {
     if (currentLesson) {
       setVideoUrl(currentLesson.videoUrl || null);
+
+      // Fetch saved progress to resume from last position
+      const fetchProgress = async () => {
+        try {
+          const response = await fetch(`/api/progress/lesson?lessonId=${currentLesson.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Resume from saved position if not completed (leave some buffer)
+            if (data.watchedSeconds && !data.completed && data.watchedSeconds > 5) {
+              setStartTime(data.watchedSeconds - 5); // Go back 5 seconds for context
+            } else {
+              setStartTime(0);
+            }
+          }
+        } catch {
+          // Silently fail - just start from beginning
+          setStartTime(0);
+        }
+      };
+
+      if (user) {
+        fetchProgress();
+      }
     }
-  }, [currentLesson]);
+  }, [currentLesson, user]);
 
   // Fetch quizzes for the current lesson
   useEffect(() => {
@@ -181,6 +211,9 @@ export default function LearnPage() {
     }
   };
 
+  // User has access via subscription or course purchase
+  const hasAccess = isSubscribed || hasPurchased;
+
   const handleNextLesson = () => {
     if (!course || !currentLesson) return;
 
@@ -189,7 +222,7 @@ export default function LearnPage() {
     const nextLesson = allLessons[currentIndex + 1];
 
     if (nextLesson) {
-      const isNextAccessible = nextLesson.isFreePreview || isSubscribed;
+      const isNextAccessible = nextLesson.isFreePreview || hasAccess;
       if (isNextAccessible) {
         handleLessonClick(nextLesson.id);
       }
@@ -202,7 +235,7 @@ export default function LearnPage() {
     const allLessons = course.modules.flatMap((m) => m.lessons);
     const currentIndex = allLessons.findIndex((l) => l.id === currentLesson.id);
     const nextLesson = allLessons[currentIndex + 1];
-    return nextLesson && (nextLesson.isFreePreview || isSubscribed);
+    return nextLesson && (nextLesson.isFreePreview || hasAccess);
   };
 
   if (loading || userLoading) {
@@ -217,7 +250,8 @@ export default function LearnPage() {
     return null;
   }
 
-  const canWatch = currentLesson?.isFreePreview || isSubscribed;
+  // User can watch if: free preview OR has subscription OR purchased this course
+  const canWatch = currentLesson?.isFreePreview || hasAccess;
 
   return (
     <div className="min-h-screen bg-background">
@@ -243,11 +277,12 @@ export default function LearnPage() {
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : canWatch && currentLesson ? (
-            <MultiAnglePlayer
-              lessonId={currentLesson.id}
-              defaultVideoUrl={videoUrl || undefined}
-              title={currentLesson.title}
+          ) : canWatch && videoUrl ? (
+            <UniversalVideoPlayer
+              src={videoUrl}
+              title={currentLesson?.title}
+              lessonId={currentLesson?.id}
+              startTime={startTime}
               onProgress={handleProgress}
               onComplete={handleComplete}
               onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
@@ -354,7 +389,7 @@ export default function LearnPage() {
           <div className="p-4 overflow-y-auto max-h-[calc(100vh-16rem)]">
             <CourseCurriculum
               modules={course.modules}
-              isSubscribed={isSubscribed}
+              isSubscribed={hasAccess}
               onLessonClick={handleLessonClick}
               currentLessonId={currentLesson?.id}
             />

@@ -1,4 +1,4 @@
-import { PrismaClient, Discipline, Role, CourseStatus } from "@prisma/client";
+import { PrismaClient, Discipline, Role, CourseStatus, Language } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,6 +7,8 @@ const coaches = {
   mma: { firstName: "Lukas", lastName: "Fromm", email: "lukas.fromm@rootsonlineacademy.com" },
   kickboxing: { firstName: "Sebastian", lastName: "Witschela", email: "sebastian.witschela@rootsonlineacademy.com" },
   grappling: { firstName: "Chris", lastName: "Stäringer", email: "chris.staringer@rootsonlineacademy.com" },
+  grapplingAlt: { firstName: "Ibrahim", lastName: "Allaoui", email: "ibrahim.allaoui@rootsonlineacademy.com" },
+  mmaAlt: { firstName: "Johnny", lastName: "Heigl", email: "johnny.heigl@rootsonlineacademy.com" },
 };
 
 async function getOrCreateCoach(coachData: { firstName: string; lastName: string; email: string }) {
@@ -234,6 +236,11 @@ Course highlights:
   }
 
   console.log("Seed completed successfully!");
+  console.log("\nTo seed additional content, run:");
+  console.log("  npx tsx prisma/seed-grappling.ts      # Additional grappling courses");
+  console.log("  npx tsx prisma/seed-courses.ts        # MMA & Kickboxing courses");
+  console.log("  npx tsx prisma/seed-achievements.ts   # Achievements & technique tags");
+  console.log("  npx tsx prisma/seed-learning-paths.ts # Curated learning paths");
 }
 
 main()
