@@ -16,13 +16,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
-  title: "Über uns",
+  title: "About Us",
   description:
-    "Erfahre mehr über Roots Online Academy - unsere Mission, erstklassige Kampfsport-Anleitung für jeden zugänglich zu machen.",
+    "Learn about Roots Online Academy - our mission to make world-class martial arts instruction accessible to everyone, everywhere.",
   openGraph: {
-    title: "Über uns | ROA",
+    title: "About Us | ROA",
     description:
-      "Erfahre mehr über Roots Online Academy - unsere Mission, erstklassige Kampfsport-Anleitung für jeden zugänglich zu machen.",
+      "Learn about Roots Online Academy - our mission to make world-class martial arts instruction accessible to everyone.",
     url: `${siteConfig.url}/about`,
   },
 };
@@ -30,47 +30,47 @@ export const metadata: Metadata = {
 const values = [
   {
     icon: Trophy,
-    title: "Exzellenz",
+    title: "Excellence",
     description:
-      "Wir arbeiten nur mit bewährten Champions und Elite-Trainern zusammen, die auf höchstem Niveau gekämpft haben.",
+      "We partner only with proven champions and elite instructors who have competed at the highest levels.",
   },
   {
     icon: Target,
-    title: "Zugänglichkeit",
+    title: "Accessibility",
     description:
-      "Erstklassige Anleitung sollte nicht durch Geografie oder Budget begrenzt sein. Wir machen sie für jeden verfügbar.",
+      "World-class instruction shouldn't be limited by geography or budget. We make it available to everyone.",
   },
   {
     icon: Heart,
-    title: "Leidenschaft",
+    title: "Passion",
     description:
-      "Jeder Trainer auf unserer Plattform teilt eine echte Liebe zum Unterrichten und hilft Schülern zu wachsen.",
+      "Every coach on our platform shares a genuine love for teaching and helping students grow.",
   },
   {
     icon: Users,
-    title: "Gemeinschaft",
+    title: "Community",
     description:
-      "Wir bauen eine globale Community von Kampfsportlern auf, die sich gegenseitig unterstützen und inspirieren.",
+      "We're building a global community of martial artists who support and inspire each other.",
   },
 ];
 
 const team = [
   {
-    name: "Dein Name",
-    role: "Gründer & CEO",
-    bio: "Ehemaliger Wettkampf-Kampfsportler mit der Vision, Elite-Anleitung für alle zugänglich zu machen.",
+    name: "Your Name",
+    role: "Founder & CEO",
+    bio: "Former competitive martial artist with a vision to democratize access to elite instruction.",
     image: null,
   },
   {
-    name: "Cheftrainer",
-    role: "Leiter Curriculum",
-    bio: "Mehrfacher Weltmeister, verantwortlich für Kursqualität und Trainerauswahl.",
+    name: "Head Coach",
+    role: "Chief Curriculum Officer",
+    bio: "Multiple-time world champion responsible for course quality and coach selection.",
     image: null,
   },
   {
     name: "Tech Lead",
     role: "CTO",
-    bio: "Entwickelt die Plattform, die erstklassige Anleitung auf deinen Bildschirm bringt.",
+    bio: "Building the platform that delivers world-class instruction to your screen.",
     image: null,
   },
 ];
@@ -87,13 +87,13 @@ export default function AboutPage() {
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Kampfsport für
-              <span className="block text-primary">Jeden, Überall</span>
+              Martial Arts for
+              <span className="block text-primary">Everyone, Everywhere</span>
             </h1>
             <p className="mt-6 text-lg text-gray-300">
-              ROA entstand aus einer einfachen Idee: Die beste Kampfsport-Anleitung
-              der Welt sollte nicht auf diejenigen beschränkt sein, die das Glück haben,
-              in der Nähe eines Top-Gyms zu leben. Das ändern wir.
+              ROA was born from a simple idea: the best martial arts instruction
+              in the world shouldn't be limited to those lucky enough to live
+              near a top gym. We're changing that.
             </p>
           </div>
         </div>
@@ -105,19 +105,19 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4 text-center">
             <div>
               <Users className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Wachsende Community</div>
+              <div className="text-sm opacity-80">Growing Community</div>
             </div>
             <div>
               <Trophy className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Elite-Trainer</div>
+              <div className="text-sm opacity-80">Elite Coaches</div>
             </div>
             <div>
               <Target className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">3 Disziplinen</div>
+              <div className="text-sm opacity-80">3 Disciplines</div>
             </div>
             <div>
               <Heart className="h-8 w-8 mx-auto mb-2 opacity-80" />
-              <div className="text-sm opacity-80">Sitz in Innsbruck</div>
+              <div className="text-sm opacity-80">Based in Innsbruck</div>
             </div>
           </div>
         </div>
@@ -129,21 +129,21 @@ export default function AboutPage() {
           <div className="grid gap-12 lg:grid-cols-2 items-center">
             <div>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                Unsere Mission
+                Our Mission
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Wir glauben, dass jeder Zugang zu qualitativ hochwertigem
-                Kampfsport-Unterricht verdient - unabhängig von Wohnort oder Budget.
+                We believe everyone deserves access to quality martial arts
+                instruction - regardless of where they live or their budget.
               </p>
               <p className="mt-4 text-muted-foreground">
-                Von Innsbruck aus bauen wir eine Plattform, die Kampfsportler
-                weltweit verbindet. Gemeinsam lernen, gemeinsam wachsen.
+                From Innsbruck, we're building a platform that connects martial
+                artists worldwide. Learn together, grow together.
               </p>
 
               <div className="mt-8">
                 <Link href="/courses">
                   <Button size="lg">
-                    Kurse entdecken
+                    Explore Our Courses
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -164,10 +164,10 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Unsere Werte
+              Our Values
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Diese Prinzipien leiten alles, was wir bei ROA tun
+              These principles guide everything we do at ROA
             </p>
           </div>
 
@@ -192,10 +192,10 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Das Team
+              Meet the Team
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Die leidenschaftlichen Menschen hinter ROA
+              The passionate people behind ROA
             </p>
           </div>
 
@@ -221,18 +221,18 @@ export default function AboutPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Warum ROA?
+              Why ROA?
             </h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 max-w-3xl mx-auto">
             {[
-              "Trainiere in deinem eigenen Tempo",
-              "Wöchentlich neue Kurse und Inhalte",
-              "Zugang auf jedem Gerät, überall",
-              "Strukturierter Lehrplan vom Anfänger bis Fortgeschritten",
-              "Community von engagierten Kampfsportlern",
-              "Persönliches Feedback von Trainern",
+              "Train at your own pace",
+              "New courses and content weekly",
+              "Access on any device, anywhere",
+              "Structured curriculum from beginner to advanced",
+              "Community of dedicated martial artists",
+              "Personal feedback from coaches",
             ].map((feature) => (
               <div key={feature} className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
@@ -247,16 +247,16 @@ export default function AboutPage() {
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Bereit anzufangen?
+            Ready to Start Your Journey?
           </h2>
           <p className="mt-4 text-lg opacity-90 max-w-2xl mx-auto">
-            Werde Teil unserer wachsenden Community von Kampfsportlern.
-            Starte heute mit 7 Tagen kostenlos.
+            Join our growing community of martial artists. Start
+            your 7-day free trial today.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/sign-up">
               <Button size="xl" variant="secondary" className="w-full sm:w-auto">
-                Kostenlos testen
+                Start Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -266,7 +266,7 @@ export default function AboutPage() {
                 variant="outline"
                 className="w-full sm:w-auto border-white/20 hover:bg-white/10"
               >
-                Kurse durchsuchen
+                Browse Courses
               </Button>
             </Link>
           </div>
