@@ -15,7 +15,7 @@ import { locales, localeNames, type Locale } from "@/lib/i18n/dictionaries";
 const LOCALE_STORAGE_KEY = "roa-locale";
 
 export function LanguageSwitcher() {
-  const [currentLocale, setCurrentLocale] = useState<Locale>("en");
+  const [currentLocale, setCurrentLocale] = useState<Locale>("de");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function LanguageSwitcher() {
 
 // Hook to get current locale
 export function useLocale(): Locale {
-  const [locale, setLocale] = useState<Locale>("en");
+  const [locale, setLocale] = useState<Locale>("de");
 
   useEffect(() => {
     const saved = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
