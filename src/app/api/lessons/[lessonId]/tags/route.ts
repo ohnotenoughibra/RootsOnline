@@ -130,7 +130,7 @@ export async function POST(
 
     // Find the technique tag
     const tag = await prisma.techniqueTag.findFirst({
-      where: tagId ? { id: tagId } : { slug: tagSlug },
+      where: tagId ? { id: tagId } : { slug: tagSlug! },
     });
 
     if (!tag) {
@@ -268,7 +268,7 @@ export async function DELETE(
 
     // Find the technique tag
     const tag = await prisma.techniqueTag.findFirst({
-      where: tagId ? { id: tagId } : { slug: tagSlug },
+      where: tagId ? { id: tagId } : { slug: tagSlug! },
     });
 
     if (!tag) {
