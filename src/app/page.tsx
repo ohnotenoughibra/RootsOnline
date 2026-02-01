@@ -51,13 +51,6 @@ const communityFeatures = [
   },
 ];
 
-const stats = [
-  { value: "10K+", label: "Active Members" },
-  { value: "500+", label: "Video Lessons" },
-  { value: "50+", label: "Expert Coaches" },
-  { value: "24/7", label: "Access" },
-];
-
 export default function HomePage() {
   return (
     <div className="flex flex-col">
@@ -84,20 +77,6 @@ export default function HomePage() {
                 Browse Courses
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="border-y">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0">
-            {stats.map((stat) => (
-              <div key={stat.label} className="py-8 px-6 text-center">
-                <p className="text-3xl font-bold">{stat.value}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>

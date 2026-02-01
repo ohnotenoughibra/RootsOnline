@@ -54,13 +54,6 @@ const values = [
   },
 ];
 
-const stats = [
-  { value: "50+", label: "Expert Coaches" },
-  { value: "200+", label: "HD Courses" },
-  { value: "10K+", label: "Students Worldwide" },
-  { value: "3", label: "Disciplines" },
-];
-
 const team = [
   {
     name: "Your Name",
@@ -102,20 +95,6 @@ export default function AboutPage() {
               in the world shouldn't be limited to those lucky enough to live
               near a top gym. We're changing that.
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-12 bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="text-4xl font-bold">{stat.value}</div>
-                <div className="mt-1 text-sm opacity-80">{stat.label}</div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
