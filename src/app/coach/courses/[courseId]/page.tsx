@@ -13,6 +13,7 @@ import {
   EyeOff,
   Upload,
   Play,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,6 +53,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { QuizEditor } from "@/components/quiz/quiz-editor";
 
 interface Lesson {
   id: string;
@@ -120,6 +122,10 @@ export default function EditCoursePage() {
   } | null>(null);
   const [coaches, setCoaches] = useState<Coach[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [quizEditorLesson, setQuizEditorLesson] = useState<{
+    moduleId: string;
+    lesson: Lesson;
+  } | null>(null);
 
   useEffect(() => {
     fetchCourse();
@@ -674,6 +680,19 @@ export default function EditCoursePage() {
                                     <Upload className="h-4 w-4 mr-1" />
                                     {lesson.videoUrl ? "Replace" : "Upload"}
                                   </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setQuizEditorLesson({
+                                        moduleId: module.id,
+                                        lesson,
+                                      })
+                                    }
+                                  >
+                                    <HelpCircle className="h-4 w-4 mr-1" />
+                                    Quiz
+                                  </Button>
                                   <div className="flex items-center gap-2">
                                     <Switch
                                       checked={lesson.isFreePreview}
@@ -870,6 +889,18 @@ export default function EditCoursePage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Quiz Editor */}
+        {quizEditorLesson && (
+          <QuizEditor
+            courseId={courseId}
+            moduleId={quizEditorLesson.moduleId}
+            lessonId={quizEditorLesson.lesson.id}
+            lessonTitle={quizEditorLesson.lesson.title}
+            open={!!quizEditorLesson}
+            onOpenChange={(open) => !open && setQuizEditorLesson(null)}
+          />
+        )}
       </div>
     </div>
   );
