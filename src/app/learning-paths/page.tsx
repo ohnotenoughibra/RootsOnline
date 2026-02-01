@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { getDisciplineLabel } from "@/lib/utils";
 import { siteConfig } from "@/lib/site-config";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Learning Paths",
   description:

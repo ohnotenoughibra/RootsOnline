@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { getInitials, getDisciplineLabel, formatDuration } from "@/lib/utils";
 import { siteConfig } from "@/lib/site-config";
 
+export const dynamic = "force-dynamic";
+
 interface InstructorPageProps {
   params: Promise<{
     id: string;

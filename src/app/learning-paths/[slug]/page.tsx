@@ -13,6 +13,8 @@ import { Progress } from "@/components/ui/progress";
 import { getDisciplineLabel } from "@/lib/utils";
 import { siteConfig } from "@/lib/site-config";
 
+export const dynamic = "force-dynamic";
+
 interface LearningPathPageProps {
   params: Promise<{
     slug: string;
