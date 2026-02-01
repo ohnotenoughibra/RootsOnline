@@ -40,7 +40,7 @@ export default function AboutPage() {
             <p>
               We're a group of friends with different backgrounds but a common
               passion: martial arts. In 2023, we turned our dream into reality
-              and opened our own studio in Amsterdam.
+              and opened our own studio in Innsbruck, Austria.
             </p>
             <p>
               Instead of just focusing on traditions, we bring a new perspective
