@@ -19,17 +19,23 @@ export default function LearnPage() {
   // Subscribe to user state to trigger re-render when user data loads
   const { user, isLoading: userLoading } = useUserStore();
 
+  const [course, setCourse] = useState<CourseWithModules | null>(null);
+
   // Compute subscription status directly from user object for reactivity
+  // Also check if user is the course owner
+  const isCourseOwner = Boolean(
+    user && course?.coach?.id && user.id === course.coach.id
+  );
+
   const isSubscribed = Boolean(
     user && (
-      user.role === "COACH" ||
       user.role === "ADMIN" ||
+      user.role === "COACH" ||
+      isCourseOwner ||
       user.subscriptionStatus === "ACTIVE" ||
       user.subscriptionStatus === "TRIALING"
     )
   );
-
-  const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
