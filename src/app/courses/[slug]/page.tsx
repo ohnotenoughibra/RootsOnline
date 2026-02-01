@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, BookOpen, User } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 import { hasActiveSubscription, getCurrentUser } from "@/lib/auth";
@@ -63,9 +64,10 @@ export async function generateMetadata({
   };
 }
 
-async function getCourse(slug: string) {
+async function getCourse(slug: string, clerkUserId: string | null) {
+  // First find the course regardless of status
   const course = await prisma.course.findUnique({
-    where: { slug, status: "PUBLISHED" },
+    where: { slug },
     include: {
       coach: {
         select: {
@@ -73,6 +75,7 @@ async function getCourse(slug: string) {
           firstName: true,
           lastName: true,
           imageUrl: true,
+          clerkId: true,
         },
       },
       modules: {
@@ -86,12 +89,34 @@ async function getCourse(slug: string) {
     },
   });
 
-  return course;
+  if (!course) return null;
+
+  // If course is published, anyone can view
+  if (course.status === "PUBLISHED") {
+    return course;
+  }
+
+  // If draft, only allow owner, coaches, or admins
+  if (!clerkUserId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: clerkUserId },
+  });
+
+  const isOwner = course.coach?.clerkId === clerkUserId;
+  const isCoachOrAdmin = user?.role === "COACH" || user?.role === "ADMIN";
+
+  if (isOwner || isCoachOrAdmin) {
+    return course;
+  }
+
+  return null;
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const { slug } = await params;
-  const course = await getCourse(slug);
+  const { userId: clerkUserId } = await auth();
+  const course = await getCourse(slug, clerkUserId);
 
   if (!course) {
     notFound();
@@ -99,6 +124,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   const isSubscribed = await hasActiveSubscription();
   const user = await getCurrentUser();
+
+  // Debug logging - check browser console or Vercel logs
+  console.log("[CoursePage] User role:", user?.role, "isSubscribed:", isSubscribed);
 
   const totalLessons = course.modules.reduce(
     (acc, m) => acc + m.lessons.length,
