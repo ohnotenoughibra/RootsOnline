@@ -112,6 +112,9 @@ model User {
   giftsPurchased        GiftSubscription[] @relation("GiftPurchaser")
   giftsReceived         GiftSubscription[] @relation("GiftRecipient")
 
+  // Instructor certification applications
+  certificationApplications CertificationApplication[]
+
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
 }
@@ -789,4 +792,97 @@ model GiftSubscription {
   @@index([purchaserId])
   @@index([giftCode])
   @@index([recipientEmail])
+}
+
+// Instructor Certification Programs
+enum CertificationLevel {
+  LEVEL_1  // Foundational - can assist in classes
+  LEVEL_2  // Intermediate - can lead beginner classes
+  LEVEL_3  // Advanced - can teach all levels
+  MASTER   // Master instructor - can certify others
+}
+
+enum CertificationStatus {
+  PENDING     // Application submitted
+  IN_REVIEW   // Being reviewed by admin
+  APPROVED    // Certification granted
+  REJECTED    // Application rejected
+  EXPIRED     // Certification expired
+}
+
+model InstructorCertification {
+  id                String              @id @default(cuid())
+  title             String              // "Level 1 Grappling Instructor"
+  slug              String              @unique
+  description       String              @db.Text
+  discipline        Discipline
+  level             CertificationLevel
+
+  // Requirements
+  requiredCourseIds String?             @db.Text // JSON array of required course IDs
+  requiredWatchHours Int                @default(0) // Minimum hours of content watched
+  minimumQuizScore  Int                 @default(80) // Minimum passing score (percentage)
+
+  // Certification details
+  validityMonths    Int                 @default(24) // How long certification is valid
+  price             Int                 @default(0)  // Application fee in cents (0 = free)
+
+  isActive          Boolean             @default(true)
+
+  // Relations
+  applications      CertificationApplication[]
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([discipline])
+  @@index([level])
+}
+
+model CertificationApplication {
+  id                    String                  @id @default(cuid())
+
+  // Applicant
+  userId                String
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Certification being applied for
+  certificationId       String
+  certification         InstructorCertification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  // Application details
+  status                CertificationStatus     @default(PENDING)
+
+  // Progress tracking (stored as JSON for flexibility)
+  completedCourseIds    String?                 @db.Text // JSON array
+  watchedHours          Float                   @default(0)
+  quizScores            String?                 @db.Text // JSON object {quizId: score}
+
+  // Supporting documents
+  resumeUrl             String?
+  videoSubmissionUrl    String?                 // Technique demonstration video
+  additionalNotes       String?                 @db.Text
+
+  // Review process
+  reviewerId            String?                 // Admin/coach who reviewed
+  reviewNotes           String?                 @db.Text
+  reviewedAt            DateTime?
+
+  // Certificate details (if approved)
+  certificateNumber     String?                 @unique
+  issuedAt              DateTime?
+  expiresAt             DateTime?
+  pdfUrl                String?                 // Generated certificate PDF
+
+  // Payment (if applicable)
+  stripePaymentId       String?
+  amountPaid            Int                     @default(0)
+
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  @@unique([userId, certificationId])
+  @@index([userId])
+  @@index([certificationId])
+  @@index([status])
 }
