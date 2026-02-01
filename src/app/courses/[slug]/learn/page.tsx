@@ -68,41 +68,10 @@ export default function LearnPage() {
     fetchCourse();
   }, [slug, lessonId, router]);
 
-  // Fetch signed video URL when lesson changes
+  // Set video URL when lesson changes - use direct URL from Cloudinary
   useEffect(() => {
-    const fetchVideoUrl = async () => {
-      if (!currentLesson?.videoPublicId) {
-        setVideoUrl(currentLesson?.videoUrl || null);
-        return;
-      }
-
-      setVideoLoading(true);
-      try {
-        const response = await fetch("/api/video/sign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            lessonId: currentLesson.id,
-            publicId: currentLesson.videoPublicId,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to get video URL");
-        }
-
-        const data = await response.json();
-        setVideoUrl(data.url);
-      } catch (error) {
-        console.error("Error fetching video URL:", error);
-        setVideoUrl(null);
-      } finally {
-        setVideoLoading(false);
-      }
-    };
-
     if (currentLesson) {
-      fetchVideoUrl();
+      setVideoUrl(currentLesson.videoUrl || null);
     }
   }, [currentLesson]);
 
