@@ -2,26 +2,44 @@ import { PrismaClient, Discipline, Role, CourseStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Real coaches by discipline
+const coaches = {
+  mma: { firstName: "Lukas", lastName: "Fromm", email: "lukas.fromm@rootsonlineacademy.com" },
+  kickboxing: { firstName: "Sebastian", lastName: "Witschela", email: "sebastian.witschela@rootsonlineacademy.com" },
+  grappling: { firstName: "Chris", lastName: "Stäringer", email: "chris.staringer@rootsonlineacademy.com" },
+};
+
+async function getOrCreateCoach(coachData: { firstName: string; lastName: string; email: string }) {
+  let coach = await prisma.user.findFirst({
+    where: { email: coachData.email },
+  });
+
+  if (!coach) {
+    coach = await prisma.user.create({
+      data: {
+        clerkId: `coach_${coachData.email.split("@")[0].replace(".", "_")}`,
+        email: coachData.email,
+        firstName: coachData.firstName,
+        lastName: coachData.lastName,
+        role: Role.COACH,
+        subscriptionStatus: "ACTIVE",
+      },
+    });
+    console.log(`Created coach: ${coachData.firstName} ${coachData.lastName}`);
+  }
+
+  return coach;
+}
+
 async function main() {
   console.log("Starting seed...");
 
-  // Create a demo coach user
-  const coach = await prisma.user.upsert({
-    where: { email: "coach@roa.demo" },
-    update: {},
-    create: {
-      clerkId: "demo_coach_clerk_id",
-      email: "coach@roa.demo",
-      firstName: "John",
-      lastName: "Champion",
-      role: Role.COACH,
-      subscriptionStatus: "ACTIVE",
-    },
-  });
+  // Create coaches
+  const mmaCoach = await getOrCreateCoach(coaches.mma);
+  const kickboxingCoach = await getOrCreateCoach(coaches.kickboxing);
+  const grapplingCoach = await getOrCreateCoach(coaches.grappling);
 
-  console.log("Created coach:", coach.email);
-
-  // Create sample courses
+  // Create sample courses with appropriate coaches
   const courses = [
     {
       title: "Complete MMA Fundamentals",
@@ -40,6 +58,7 @@ Topics covered:
 Perfect for beginners looking to build a solid foundation in MMA.`,
       shortDescription: "Master the fundamentals of mixed martial arts from scratch",
       discipline: Discipline.MMA,
+      coachId: mmaCoach.id,
       modules: [
         {
           title: "Fighting Stance & Movement",
@@ -84,6 +103,7 @@ What you'll learn:
 - Fighting at range vs. in the pocket`,
       shortDescription: "Elevate your striking game with advanced kickboxing techniques",
       discipline: Discipline.KICKBOXING,
+      coachId: kickboxingCoach.id,
       modules: [
         {
           title: "Advanced Footwork",
@@ -119,6 +139,7 @@ Course highlights:
 - Competition strategies`,
       shortDescription: "Essential no-gi techniques for grapplers and MMA fighters",
       discipline: Discipline.GRAPPLING,
+      coachId: grapplingCoach.id,
       modules: [
         {
           title: "Takedown Fundamentals",
@@ -149,14 +170,14 @@ Course highlights:
   ];
 
   for (const courseData of courses) {
-    const { modules, ...courseInfo } = courseData;
+    const { modules, coachId, ...courseInfo } = courseData;
 
     const course = await prisma.course.upsert({
       where: { slug: courseInfo.slug },
-      update: {},
+      update: { coachId }, // Update coach if course exists
       create: {
         ...courseInfo,
-        coachId: coach.id,
+        coachId,
         status: CourseStatus.PUBLISHED,
         featured: true,
         publishedAt: new Date(),
