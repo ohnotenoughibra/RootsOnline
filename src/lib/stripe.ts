@@ -81,10 +81,9 @@ export async function createCheckoutSession(params: {
       userId: params.userId,
       promoCodeId: params.promoCodeId || "",
     },
-    allow_promotion_codes: !params.discountPercent, // Disable Stripe promos if custom promo applied
   };
 
-  // Add custom discount if provided
+  // Add custom discount if provided - Stripe doesn't allow both discounts and allow_promotion_codes
   if (params.discountPercent && params.discountPercent > 0) {
     // Create a one-time coupon for this checkout
     const coupon = await stripe.coupons.create({
@@ -93,6 +92,9 @@ export async function createCheckoutSession(params: {
       name: "Promo Code Discount",
     });
     sessionParams.discounts = [{ coupon: coupon.id }];
+  } else {
+    // Only enable promotion codes when not applying a custom discount
+    sessionParams.allow_promotion_codes = true;
   }
 
   // Add trial period if enabled and requested

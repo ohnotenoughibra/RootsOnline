@@ -5,6 +5,57 @@ const prisma = new PrismaClient();
 // Comprehensive Grappling Curriculum
 // Organized by difficulty level with progressive learning paths
 
+// Sample YouTube videos for grappling lessons
+// These are educational BJJ videos from popular instructional channels
+const sampleGrapplingVideos = {
+  // Positions
+  positionHierarchy: "https://www.youtube.com/watch?v=BWitv9AKoNU",
+  closedGuard: "https://www.youtube.com/watch?v=hceTisQf0Lk",
+  mount: "https://www.youtube.com/watch?v=tdzpycDGvdI",
+  sideControl: "https://www.youtube.com/watch?v=cuXq-k__9lQ",
+  backControl: "https://www.youtube.com/watch?v=i6zWvHzHw2M",
+
+  // Escapes
+  bridgeAndRoll: "https://www.youtube.com/watch?v=G1UpQjT1kSE",
+  elbowKneeEscape: "https://www.youtube.com/watch?v=EMEueexp9zU",
+  sideControlEscape: "https://www.youtube.com/watch?v=V7vmzcc3ldA",
+  turtleDefense: "https://www.youtube.com/watch?v=fBJgqbUQP_Q",
+  backEscape: "https://www.youtube.com/watch?v=pJd2J-6G7Nk",
+
+  // Submissions
+  americana: "https://www.youtube.com/watch?v=lDknZVSqEJI",
+  crossCollarChoke: "https://www.youtube.com/watch?v=xaEJqWZVXpI",
+  armbarFromGuard: "https://www.youtube.com/watch?v=bDVO9kXu5Lc",
+  triangleChoke: "https://www.youtube.com/watch?v=EUGH2FEQVKY",
+  rearNakedChoke: "https://www.youtube.com/watch?v=3S83YDPEBXI",
+
+  // Guard
+  hipBumpSweep: "https://www.youtube.com/watch?v=8azEnHn-c9Q",
+  scissorSweep: "https://www.youtube.com/watch?v=dYTDvJdznHM",
+  omoplata: "https://www.youtube.com/watch?v=1QSk-A1L4Tc",
+  kimura: "https://www.youtube.com/watch?v=eXUegCq4rDc",
+
+  // Passing
+  toreandoPass: "https://www.youtube.com/watch?v=nHFEbUbBf_I",
+  kneeCutPass: "https://www.youtube.com/watch?v=J7JiE9ruwjc",
+  legDrag: "https://www.youtube.com/watch?v=0QUE8-H6nvY",
+  stackPass: "https://www.youtube.com/watch?v=HlxVlOvCv48",
+
+  // Open Guard
+  dlrGuard: "https://www.youtube.com/watch?v=wjxuKFqIJlY",
+  rdlrGuard: "https://www.youtube.com/watch?v=Vu_DeBcS0ig",
+  spiderGuard: "https://www.youtube.com/watch?v=O0H7PTBEI6Q",
+  lassoGuard: "https://www.youtube.com/watch?v=Ga_VyaKL50I",
+  berimbolo: "https://www.youtube.com/watch?v=J0nE5kTbs34",
+
+  // No-Gi
+  guillotine: "https://www.youtube.com/watch?v=1NDpKlXGxL4",
+  darce: "https://www.youtube.com/watch?v=b_bJdmkKDts",
+  anaconda: "https://www.youtube.com/watch?v=aBEGQ1JhX7Q",
+  butterflyGuard: "https://www.youtube.com/watch?v=X2wF_EYE974",
+  singleLegX: "https://www.youtube.com/watch?v=3N3GmXgSq58",
+};
+
 export const grapplingCurriculum = {
   // ===================
   // BEGINNER LEVEL
@@ -32,11 +83,11 @@ What you'll learn:
           description: "Learn the hierarchy of positions and why position matters before submission",
           order: 1,
           lessons: [
-            { title: "The Position Hierarchy Explained", duration: 720, order: 1 },
-            { title: "Closed Guard - Your Safe Space", duration: 840, order: 2 },
-            { title: "Mount - The Dominant Position", duration: 780, order: 3 },
-            { title: "Side Control Fundamentals", duration: 810, order: 4 },
-            { title: "Back Control - The Ultimate Position", duration: 750, order: 5 },
+            { title: "The Position Hierarchy Explained", duration: 720, order: 1, videoUrl: sampleGrapplingVideos.positionHierarchy },
+            { title: "Closed Guard - Your Safe Space", duration: 840, order: 2, videoUrl: sampleGrapplingVideos.closedGuard },
+            { title: "Mount - The Dominant Position", duration: 780, order: 3, videoUrl: sampleGrapplingVideos.mount },
+            { title: "Side Control Fundamentals", duration: 810, order: 4, videoUrl: sampleGrapplingVideos.sideControl },
+            { title: "Back Control - The Ultimate Position", duration: 750, order: 5, videoUrl: sampleGrapplingVideos.backControl },
           ],
         },
         {
@@ -44,11 +95,11 @@ What you'll learn:
           description: "Never feel trapped again with these fundamental escapes",
           order: 2,
           lessons: [
-            { title: "The Bridge & Roll (Upa) Escape", duration: 660, order: 1 },
-            { title: "Elbow-Knee Escape from Mount", duration: 720, order: 2 },
-            { title: "Side Control Escape to Guard", duration: 780, order: 3 },
-            { title: "Turtle Defense & Recovery", duration: 690, order: 4 },
-            { title: "Back Escape Fundamentals", duration: 840, order: 5 },
+            { title: "The Bridge & Roll (Upa) Escape", duration: 660, order: 1, videoUrl: sampleGrapplingVideos.bridgeAndRoll },
+            { title: "Elbow-Knee Escape from Mount", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.elbowKneeEscape },
+            { title: "Side Control Escape to Guard", duration: 780, order: 3, videoUrl: sampleGrapplingVideos.sideControlEscape },
+            { title: "Turtle Defense & Recovery", duration: 690, order: 4, videoUrl: sampleGrapplingVideos.turtleDefense },
+            { title: "Back Escape Fundamentals", duration: 840, order: 5, videoUrl: sampleGrapplingVideos.backEscape },
           ],
         },
         {
@@ -56,11 +107,11 @@ What you'll learn:
           description: "Learn high-percentage submissions that work at all levels",
           order: 3,
           lessons: [
-            { title: "The Americana from Mount", duration: 600, order: 1 },
-            { title: "Cross Collar Choke from Mount", duration: 720, order: 2 },
-            { title: "Armbar from Closed Guard", duration: 840, order: 3 },
-            { title: "Triangle Choke Introduction", duration: 900, order: 4 },
-            { title: "Rear Naked Choke Basics", duration: 660, order: 5 },
+            { title: "The Americana from Mount", duration: 600, order: 1, videoUrl: sampleGrapplingVideos.americana },
+            { title: "Cross Collar Choke from Mount", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.crossCollarChoke },
+            { title: "Armbar from Closed Guard", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.armbarFromGuard },
+            { title: "Triangle Choke Introduction", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.triangleChoke },
+            { title: "Rear Naked Choke Basics", duration: 660, order: 5, videoUrl: sampleGrapplingVideos.rearNakedChoke },
           ],
         },
         {
@@ -68,10 +119,10 @@ What you'll learn:
           description: "Combine positions, escapes, and submissions into flowing sequences",
           order: 4,
           lessons: [
-            { title: "Linking Guard Attacks", duration: 780, order: 1 },
-            { title: "Mount Attack Combinations", duration: 720, order: 2 },
-            { title: "Defensive to Offensive Transitions", duration: 840, order: 3 },
-            { title: "Sparring Strategy for Beginners", duration: 900, order: 4 },
+            { title: "Linking Guard Attacks", duration: 780, order: 1, videoUrl: sampleGrapplingVideos.armbarFromGuard },
+            { title: "Mount Attack Combinations", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.americana },
+            { title: "Defensive to Offensive Transitions", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.sideControlEscape },
+            { title: "Sparring Strategy for Beginners", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.positionHierarchy },
           ],
         },
       ],
@@ -99,10 +150,10 @@ You'll master:
           description: "Control your opponent before attacking",
           order: 1,
           lessons: [
-            { title: "Proper Closed Guard Posture", duration: 600, order: 1 },
-            { title: "Essential Grips & Grip Fighting", duration: 720, order: 2 },
-            { title: "Breaking Posture Techniques", duration: 780, order: 3 },
-            { title: "Hip Movement in Guard", duration: 660, order: 4 },
+            { title: "Proper Closed Guard Posture", duration: 600, order: 1, videoUrl: sampleGrapplingVideos.closedGuard },
+            { title: "Essential Grips & Grip Fighting", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.closedGuard },
+            { title: "Breaking Posture Techniques", duration: 780, order: 3, videoUrl: sampleGrapplingVideos.closedGuard },
+            { title: "Hip Movement in Guard", duration: 660, order: 4, videoUrl: sampleGrapplingVideos.closedGuard },
           ],
         },
         {
@@ -110,10 +161,10 @@ You'll master:
           description: "Get on top with these fundamental sweeps",
           order: 2,
           lessons: [
-            { title: "Hip Bump Sweep Masterclass", duration: 840, order: 1 },
-            { title: "Scissor Sweep & Variations", duration: 900, order: 2 },
-            { title: "Flower Sweep (Pendulum)", duration: 720, order: 3 },
-            { title: "Combining Sweeps & Attacks", duration: 780, order: 4 },
+            { title: "Hip Bump Sweep Masterclass", duration: 840, order: 1, videoUrl: sampleGrapplingVideos.hipBumpSweep },
+            { title: "Scissor Sweep & Variations", duration: 900, order: 2, videoUrl: sampleGrapplingVideos.scissorSweep },
+            { title: "Flower Sweep (Pendulum)", duration: 720, order: 3, videoUrl: sampleGrapplingVideos.scissorSweep },
+            { title: "Combining Sweeps & Attacks", duration: 780, order: 4, videoUrl: sampleGrapplingVideos.hipBumpSweep },
           ],
         },
         {
@@ -121,11 +172,11 @@ You'll master:
           description: "Finish the fight from your back",
           order: 3,
           lessons: [
-            { title: "Armbar from Guard - Deep Dive", duration: 900, order: 1 },
-            { title: "Triangle Choke Mechanics", duration: 960, order: 2 },
-            { title: "Omoplata Setup & Finish", duration: 840, order: 3 },
-            { title: "Cross Choke from Guard", duration: 720, order: 4 },
-            { title: "The Kimura Trap System", duration: 780, order: 5 },
+            { title: "Armbar from Guard - Deep Dive", duration: 900, order: 1, videoUrl: sampleGrapplingVideos.armbarFromGuard },
+            { title: "Triangle Choke Mechanics", duration: 960, order: 2, videoUrl: sampleGrapplingVideos.triangleChoke },
+            { title: "Omoplata Setup & Finish", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.omoplata },
+            { title: "Cross Choke from Guard", duration: 720, order: 4, videoUrl: sampleGrapplingVideos.crossCollarChoke },
+            { title: "The Kimura Trap System", duration: 780, order: 5, videoUrl: sampleGrapplingVideos.kimura },
           ],
         },
       ],
@@ -152,11 +203,11 @@ Course highlights:
           description: "The most versatile top position",
           order: 1,
           lessons: [
-            { title: "Heavy Side Control Fundamentals", duration: 720, order: 1 },
-            { title: "Crossface & Underhook Control", duration: 660, order: 2 },
-            { title: "Kesa Gatame (Scarf Hold)", duration: 600, order: 3 },
-            { title: "North-South Position", duration: 720, order: 4 },
-            { title: "Side Control Submissions", duration: 840, order: 5 },
+            { title: "Heavy Side Control Fundamentals", duration: 720, order: 1, videoUrl: sampleGrapplingVideos.sideControl },
+            { title: "Crossface & Underhook Control", duration: 660, order: 2, videoUrl: sampleGrapplingVideos.sideControl },
+            { title: "Kesa Gatame (Scarf Hold)", duration: 600, order: 3, videoUrl: sampleGrapplingVideos.sideControl },
+            { title: "North-South Position", duration: 720, order: 4, videoUrl: sampleGrapplingVideos.sideControl },
+            { title: "Side Control Submissions", duration: 840, order: 5, videoUrl: sampleGrapplingVideos.americana },
           ],
         },
         {
@@ -164,10 +215,10 @@ Course highlights:
           description: "The king of positions",
           order: 2,
           lessons: [
-            { title: "Low Mount vs High Mount", duration: 660, order: 1 },
-            { title: "Maintaining Mount Against Escapes", duration: 780, order: 2 },
-            { title: "S-Mount & Technical Mount", duration: 720, order: 3 },
-            { title: "Mount Submission Attacks", duration: 900, order: 4 },
+            { title: "Low Mount vs High Mount", duration: 660, order: 1, videoUrl: sampleGrapplingVideos.mount },
+            { title: "Maintaining Mount Against Escapes", duration: 780, order: 2, videoUrl: sampleGrapplingVideos.mount },
+            { title: "S-Mount & Technical Mount", duration: 720, order: 3, videoUrl: sampleGrapplingVideos.mount },
+            { title: "Mount Submission Attacks", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.americana },
           ],
         },
         {
@@ -175,10 +226,10 @@ Course highlights:
           description: "The most demoralizing position",
           order: 3,
           lessons: [
-            { title: "Knee on Belly Basics", duration: 600, order: 1 },
-            { title: "Maintaining KOB Pressure", duration: 660, order: 2 },
-            { title: "KOB to Mount Transitions", duration: 720, order: 3 },
-            { title: "Submissions from KOB", duration: 780, order: 4 },
+            { title: "Knee on Belly Basics", duration: 600, order: 1, videoUrl: sampleGrapplingVideos.kneeCutPass },
+            { title: "Maintaining KOB Pressure", duration: 660, order: 2, videoUrl: sampleGrapplingVideos.kneeCutPass },
+            { title: "KOB to Mount Transitions", duration: 720, order: 3, videoUrl: sampleGrapplingVideos.mount },
+            { title: "Submissions from KOB", duration: 780, order: 4, videoUrl: sampleGrapplingVideos.armbarFromGuard },
           ],
         },
       ],
@@ -212,10 +263,10 @@ You'll learn:
           description: "Core concepts that apply to all passing",
           order: 1,
           lessons: [
-            { title: "Guard Passing Philosophy", duration: 600, order: 1 },
-            { title: "Posture & Base When Passing", duration: 720, order: 2 },
-            { title: "Dealing with Grips", duration: 780, order: 3 },
-            { title: "Understanding Guard Retention", duration: 660, order: 4 },
+            { title: "Guard Passing Philosophy", duration: 600, order: 1, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "Posture & Base When Passing", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.kneeCutPass },
+            { title: "Dealing with Grips", duration: 780, order: 3, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "Understanding Guard Retention", duration: 660, order: 4, videoUrl: sampleGrapplingVideos.closedGuard },
           ],
         },
         {
@@ -223,10 +274,10 @@ You'll learn:
           description: "Quick passes that don't allow your opponent to settle",
           order: 2,
           lessons: [
-            { title: "Toreando Pass Fundamentals", duration: 840, order: 1 },
-            { title: "Toreando Variations & Counters", duration: 900, order: 2 },
-            { title: "X-Pass Mechanics", duration: 720, order: 3 },
-            { title: "Long Step Pass", duration: 780, order: 4 },
+            { title: "Toreando Pass Fundamentals", duration: 840, order: 1, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "Toreando Variations & Counters", duration: 900, order: 2, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "X-Pass Mechanics", duration: 720, order: 3, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "Long Step Pass", duration: 780, order: 4, videoUrl: sampleGrapplingVideos.legDrag },
           ],
         },
         {
@@ -234,10 +285,10 @@ You'll learn:
           description: "Slow, methodical passes that smother your opponent",
           order: 3,
           lessons: [
-            { title: "Knee Cut Pass Deep Dive", duration: 960, order: 1 },
-            { title: "Leg Drag System", duration: 900, order: 2 },
-            { title: "Over-Under Pass", duration: 840, order: 3 },
-            { title: "Double Under Stack Pass", duration: 780, order: 4 },
+            { title: "Knee Cut Pass Deep Dive", duration: 960, order: 1, videoUrl: sampleGrapplingVideos.kneeCutPass },
+            { title: "Leg Drag System", duration: 900, order: 2, videoUrl: sampleGrapplingVideos.legDrag },
+            { title: "Over-Under Pass", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.stackPass },
+            { title: "Double Under Stack Pass", duration: 780, order: 4, videoUrl: sampleGrapplingVideos.stackPass },
           ],
         },
         {
@@ -245,10 +296,10 @@ You'll learn:
           description: "Chain passes together for unstoppable sequences",
           order: 4,
           lessons: [
-            { title: "Speed to Pressure Combinations", duration: 780, order: 1 },
-            { title: "Dealing with Inversions", duration: 720, order: 2 },
-            { title: "Passing Open Guards", duration: 840, order: 3 },
-            { title: "Complete Passing Gameplan", duration: 900, order: 4 },
+            { title: "Speed to Pressure Combinations", duration: 780, order: 1, videoUrl: sampleGrapplingVideos.kneeCutPass },
+            { title: "Dealing with Inversions", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.berimbolo },
+            { title: "Passing Open Guards", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.toreandoPass },
+            { title: "Complete Passing Gameplan", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.kneeCutPass },
           ],
         },
       ],
@@ -276,11 +327,11 @@ Guards covered:
           description: "The foundation of modern open guard",
           order: 1,
           lessons: [
-            { title: "DLR Hook & Grips", duration: 720, order: 1 },
-            { title: "Basic DLR Sweeps", duration: 840, order: 2 },
-            { title: "DLR to Back Takes", duration: 780, order: 3 },
-            { title: "Berimbolo Introduction", duration: 900, order: 4 },
-            { title: "DLR Retention", duration: 660, order: 5 },
+            { title: "DLR Hook & Grips", duration: 720, order: 1, videoUrl: sampleGrapplingVideos.dlrGuard },
+            { title: "Basic DLR Sweeps", duration: 840, order: 2, videoUrl: sampleGrapplingVideos.dlrGuard },
+            { title: "DLR to Back Takes", duration: 780, order: 3, videoUrl: sampleGrapplingVideos.backControl },
+            { title: "Berimbolo Introduction", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.berimbolo },
+            { title: "DLR Retention", duration: 660, order: 5, videoUrl: sampleGrapplingVideos.dlrGuard },
           ],
         },
         {
@@ -288,10 +339,10 @@ Guards covered:
           description: "Control the nearside for powerful sweeps",
           order: 2,
           lessons: [
-            { title: "RDLR Fundamentals", duration: 720, order: 1 },
-            { title: "Kiss of the Dragon", duration: 780, order: 2 },
-            { title: "RDLR Sweeps", duration: 840, order: 3 },
-            { title: "Linking DLR & RDLR", duration: 720, order: 4 },
+            { title: "RDLR Fundamentals", duration: 720, order: 1, videoUrl: sampleGrapplingVideos.rdlrGuard },
+            { title: "Kiss of the Dragon", duration: 780, order: 2, videoUrl: sampleGrapplingVideos.rdlrGuard },
+            { title: "RDLR Sweeps", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.rdlrGuard },
+            { title: "Linking DLR & RDLR", duration: 720, order: 4, videoUrl: sampleGrapplingVideos.dlrGuard },
           ],
         },
         {
@@ -299,11 +350,11 @@ Guards covered:
           description: "Distance management guards",
           order: 3,
           lessons: [
-            { title: "Spider Guard Fundamentals", duration: 720, order: 1 },
-            { title: "Spider Sweeps & Triangles", duration: 840, order: 2 },
-            { title: "Lasso Guard Setup", duration: 660, order: 3 },
-            { title: "Lasso Omoplata & Sweeps", duration: 780, order: 4 },
-            { title: "Combining Spider & Lasso", duration: 720, order: 5 },
+            { title: "Spider Guard Fundamentals", duration: 720, order: 1, videoUrl: sampleGrapplingVideos.spiderGuard },
+            { title: "Spider Sweeps & Triangles", duration: 840, order: 2, videoUrl: sampleGrapplingVideos.spiderGuard },
+            { title: "Lasso Guard Setup", duration: 660, order: 3, videoUrl: sampleGrapplingVideos.lassoGuard },
+            { title: "Lasso Omoplata & Sweeps", duration: 780, order: 4, videoUrl: sampleGrapplingVideos.omoplata },
+            { title: "Combining Spider & Lasso", duration: 720, order: 5, videoUrl: sampleGrapplingVideos.spiderGuard },
           ],
         },
         {
@@ -311,10 +362,10 @@ Guards covered:
           description: "Link all guards into a cohesive game",
           order: 4,
           lessons: [
-            { title: "Guard Transitions Flow", duration: 780, order: 1 },
-            { title: "Collar-Sleeve Integration", duration: 720, order: 2 },
-            { title: "Single Leg X Entries", duration: 840, order: 3 },
-            { title: "Creating Your Guard System", duration: 900, order: 4 },
+            { title: "Guard Transitions Flow", duration: 780, order: 1, videoUrl: sampleGrapplingVideos.dlrGuard },
+            { title: "Collar-Sleeve Integration", duration: 720, order: 2, videoUrl: sampleGrapplingVideos.spiderGuard },
+            { title: "Single Leg X Entries", duration: 840, order: 3, videoUrl: sampleGrapplingVideos.singleLegX },
+            { title: "Creating Your Guard System", duration: 900, order: 4, videoUrl: sampleGrapplingVideos.closedGuard },
           ],
         },
       ],
@@ -629,12 +680,13 @@ export async function seedGrapplingCurriculum(coachId: string) {
             description: module.description,
             order: module.order,
             lessons: {
-              create: module.lessons.map((lesson) => ({
+              create: module.lessons.map((lesson: { title: string; duration: number; order: number; videoUrl?: string }) => ({
                 title: lesson.title,
                 videoDuration: lesson.duration,
                 order: lesson.order,
                 isPublished: true,
                 isFreePreview: lesson.order === 1 && module.order === 1,
+                videoUrl: lesson.videoUrl || null,
               })),
             },
           })),

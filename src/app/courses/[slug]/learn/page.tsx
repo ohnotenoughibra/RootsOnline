@@ -6,7 +6,7 @@ import { ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { VideoPlayer } from "@/components/video/video-player";
+import { UniversalVideoPlayer } from "@/components/video/universal-video-player";
 import { LockedVideo } from "@/components/video/locked-video";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
 import { useUserStore } from "@/store/user-store";
@@ -211,9 +211,10 @@ export default function LearnPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : canWatch && videoUrl ? (
-            <VideoPlayer
+            <UniversalVideoPlayer
               src={videoUrl}
               title={currentLesson?.title}
+              lessonId={currentLesson?.id}
               onProgress={handleProgress}
               onComplete={handleComplete}
               onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
