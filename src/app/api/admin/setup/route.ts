@@ -34,7 +34,12 @@ export async function POST(request: Request) {
     // Mode 1: Initial admin setup (no admin exists yet)
     if (!existingAdmin) {
       const setupSecret = request.headers.get("x-setup-secret");
-      const expectedSecret = process.env.ADMIN_SETUP_SECRET || "ROA-SETUP-2026";
+      const expectedSecret = process.env.ADMIN_SETUP_SECRET;
+
+      if (!expectedSecret) {
+        console.error("ADMIN_SETUP_SECRET environment variable is not set");
+        return NextResponse.json({ error: "Admin setup not configured" }, { status: 500 });
+      }
 
       if (setupSecret !== expectedSecret) {
         return NextResponse.json({ error: "Invalid setup secret" }, { status: 403 });
@@ -83,7 +88,7 @@ export async function POST(request: Request) {
     });
 
     if (!targetUser) {
-      return NextResponse.json({ error: `User not found: ${email}` }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const updatedUser = await prisma.user.update({

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     });
 
     if (!targetUser) {
-      return NextResponse.json({ error: `User not found: ${email}` }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Update role

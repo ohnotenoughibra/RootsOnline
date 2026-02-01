@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { randomBytes } from "crypto";
 
 import { prisma } from "@/lib/prisma";
+import { rateLimit, getClientIp, RATE_LIMITS } from "@/lib/rate-limit";
 
 function generateReferralCode(): string {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let code = "";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  // Use cryptographically secure random generation
+  const bytes = randomBytes(6);
+  return bytes.toString("base64url").substring(0, 8).toUpperCase();
 }
 
 // GET referral info for current user
@@ -73,7 +72,7 @@ export async function GET() {
     });
 
     const totalEarned = successfulReferrals.reduce(
-      (sum, r) => sum + r.rewardAmount,
+      (sum: number, r: { rewardAmount: number }) => sum + r.rewardAmount,
       0
     );
 
@@ -97,6 +96,17 @@ export async function GET() {
 // POST - validate referral code during signup
 export async function POST(request: Request) {
   try {
+    // Rate limit to prevent abuse
+    const ip = await getClientIp();
+    const rateLimitResult = await rateLimit(`referral-validate:${ip}`, RATE_LIMITS.strict);
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { referralCode, userId } = await request.json();
 
     if (!referralCode) {

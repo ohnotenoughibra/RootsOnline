@@ -13,15 +13,21 @@ export const dynamic = "force-dynamic";
 // Configure in vercel.json or cron provider
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security
+    // Verify cron secret for security - REQUIRED
     const headersList = await headers();
-    const cronSecret = headersList.get("x-cron-secret");
+    const authHeader = headersList.get("authorization");
+    const cronSecretHeader = headersList.get("x-cron-secret");
+    const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret !== process.env.CRON_SECRET) {
-      // Allow in development
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (!cronSecret) {
+      console.error("CRON_SECRET environment variable is not set");
+      return NextResponse.json({ error: "Cron endpoint not configured" }, { status: 500 });
+    }
+
+    // Support both Authorization: Bearer and x-cron-secret headers
+    const providedSecret = authHeader?.replace("Bearer ", "") || cronSecretHeader;
+    if (providedSecret !== cronSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Find users who:

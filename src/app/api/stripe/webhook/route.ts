@@ -14,6 +14,39 @@ import {
 
 export const dynamic = "force-dynamic";
 
+// Idempotency cache to prevent duplicate event processing
+// Events are cached for 24 hours. In production with multiple instances,
+// consider using Redis (Upstash) for distributed idempotency.
+const processedEvents = new Map<string, number>();
+const IDEMPOTENCY_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+function isEventProcessed(eventId: string): boolean {
+  const processedAt = processedEvents.get(eventId);
+  if (!processedAt) return false;
+
+  // Check if TTL has expired
+  if (Date.now() - processedAt > IDEMPOTENCY_TTL) {
+    processedEvents.delete(eventId);
+    return false;
+  }
+
+  return true;
+}
+
+function markEventProcessed(eventId: string): void {
+  processedEvents.set(eventId, Date.now());
+
+  // Clean up old entries periodically (1% chance per request)
+  if (Math.random() < 0.01) {
+    const now = Date.now();
+    for (const [id, timestamp] of processedEvents.entries()) {
+      if (now - timestamp > IDEMPOTENCY_TTL) {
+        processedEvents.delete(id);
+      }
+    }
+  }
+}
+
 export async function POST(request: Request) {
   if (!stripe) {
     return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
@@ -40,6 +73,12 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // Check idempotency - prevent duplicate processing of the same event
+  if (isEventProcessed(event.id)) {
+    console.log(`Skipping already processed event: ${event.id}`);
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   try {
@@ -76,9 +115,13 @@ export async function POST(request: Request) {
       }
     }
 
+    // Mark event as processed only after successful handling
+    markEventProcessed(event.id);
+
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook handler error:", error);
+    // Don't mark as processed on error - allow Stripe to retry
     return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
 }

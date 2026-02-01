@@ -9,12 +9,17 @@ import { sendEmail, weeklyDigestEmail, isEmailConfigured } from "@/lib/email";
 
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security
+    // Verify cron secret for security - REQUIRED in production
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+      console.error("CRON_SECRET environment variable is not set");
+      return NextResponse.json({ error: "Cron endpoint not configured" }, { status: 500 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -90,7 +95,43 @@ export async function GET(request: Request) {
         const totalWatchTime = formatWatchTime(totalWatchedSeconds);
         const streakDays = user.streaks[0]?.currentStreak || 0;
 
-        // Get courses in progress
+        // Get courses in progress - batch query for lesson counts to avoid N+1
+        type LessonProgressItem = (typeof user.lessonProgress)[number];
+        const courseIds = [...new Set(
+          user.lessonProgress.map((p: LessonProgressItem) => p.lesson.module.course.id)
+        )];
+
+        // Get all lesson counts in one query
+        const lessonCounts = await prisma.lesson.groupBy({
+          by: ["moduleId"],
+          where: {
+            module: { courseId: { in: courseIds } },
+            isPublished: true,
+          },
+          _count: { id: true },
+        });
+
+        // Get module to course mapping
+        const modules = await prisma.module.findMany({
+          where: { courseId: { in: courseIds } },
+          select: { id: true, courseId: true },
+        });
+
+        type ModuleItem = (typeof modules)[number];
+        const moduleToCoursemap = new Map<string, string>(
+          modules.map((m: ModuleItem) => [m.id, m.courseId])
+        );
+        const courseLessonCounts = new Map<string, number>();
+        for (const lc of lessonCounts) {
+          const courseId = moduleToCoursemap.get(lc.moduleId);
+          if (courseId) {
+            courseLessonCounts.set(
+              courseId,
+              (courseLessonCounts.get(courseId) || 0) + lc._count.id
+            );
+          }
+        }
+
         const courseProgress = new Map<
           string,
           { title: string; completed: number; total: number }
@@ -99,19 +140,10 @@ export async function GET(request: Request) {
         for (const progress of user.lessonProgress) {
           const course = progress.lesson.module.course;
           if (!courseProgress.has(course.id)) {
-            // Count total lessons in course
-            const totalLessons = await prisma.lesson.count({
-              where: {
-                module: {
-                  courseId: course.id,
-                },
-                isPublished: true,
-              },
-            });
             courseProgress.set(course.id, {
               title: course.title,
               completed: 0,
-              total: totalLessons,
+              total: courseLessonCounts.get(course.id) || 0,
             });
           }
           if (progress.completed) {
