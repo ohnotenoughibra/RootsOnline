@@ -746,37 +746,40 @@ export async function seedGrapplingCurriculum(coachId: string) {
   console.log("✨ Grappling curriculum seeded successfully!");
 }
 
+// Coach type for arrays
+type Coach = Awaited<ReturnType<typeof getOrCreateCoach>>;
+
 // Main execution
 async function main() {
   console.log("🏋️ Setting up ROA Coaches and Curriculum...\n");
 
   // Create all default coaches
   console.log("📋 Creating/updating coaches...");
-  const grapplingCoaches = [];
+  const grapplingCoaches: Coach[] = [];
   for (const coachData of defaultCoaches.grappling) {
     const coach = await getOrCreateCoach(coachData);
     grapplingCoaches.push(coach);
   }
 
-  const mmaCoaches = [];
+  const mmaCoaches: Coach[] = [];
   for (const coachData of defaultCoaches.mma) {
     const coach = await getOrCreateCoach(coachData);
     mmaCoaches.push(coach);
   }
 
-  const strikingCoaches = [];
+  const strikingCoaches: Coach[] = [];
   for (const coachData of defaultCoaches.striking) {
     const coach = await getOrCreateCoach(coachData);
     // Avoid duplicates (Johnny Heigl is in both MMA and Striking)
-    if (!strikingCoaches.find(c => c.id === coach.id)) {
+    if (!strikingCoaches.find((c) => c.id === coach.id)) {
       strikingCoaches.push(coach);
     }
   }
 
   console.log(`\n✅ Coaches ready:`);
-  console.log(`   Grappling: ${grapplingCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
-  console.log(`   MMA: ${mmaCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
-  console.log(`   Striking: ${strikingCoaches.map(c => `${c.firstName} ${c.lastName}`).join(", ")}`);
+  console.log(`   Grappling: ${grapplingCoaches.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}`);
+  console.log(`   MMA: ${mmaCoaches.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}`);
+  console.log(`   Striking: ${strikingCoaches.map((c) => `${c.firstName} ${c.lastName}`).join(", ")}`);
 
   // Use first grappling coach (Chris Stäringer) for grappling curriculum
   const primaryGrapplingCoach = grapplingCoaches[0];
