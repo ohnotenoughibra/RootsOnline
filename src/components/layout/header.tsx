@@ -20,7 +20,8 @@ const navigation = [
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { isCoach, isAdmin } = useUserStore();
+  // Subscribe to user state to trigger re-render when user data loads
+  const { user: dbUser, isCoach, isAdmin } = useUserStore();
   const { user } = useUser();
 
   return (

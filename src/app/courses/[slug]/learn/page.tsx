@@ -16,7 +16,8 @@ export default function LearnPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { hasActiveSubscription, isLoading: userLoading } = useUserStore();
+  // Subscribe to user state to trigger re-render when user data loads
+  const { user, hasActiveSubscription, isLoading: userLoading } = useUserStore();
 
   const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
