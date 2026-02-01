@@ -75,6 +75,7 @@ export default function PricingPage() {
         body: JSON.stringify({
           plan: planId,
           promoCode: promoData?.code,
+          withTrial: true,
         }),
       });
 
