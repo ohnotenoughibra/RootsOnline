@@ -23,11 +23,13 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify course ownership
+    const isAdmin = user.role === "ADMIN";
+
+    // Verify course ownership (admins can access any course)
     const course = await prisma.course.findFirst({
       where: {
         id: courseId,
-        coachId: user.id,
+        ...(isAdmin ? {} : { coachId: user.id }),
       },
     });
 
