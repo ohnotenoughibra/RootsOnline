@@ -34,6 +34,7 @@ export default function LearnPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [videoLoading, setVideoLoading] = useState(false);
+  const [startTime, setStartTime] = useState(0);
 
   const slug = params.slug as string;
   const lessonId = searchParams.get("lesson");
@@ -68,12 +69,35 @@ export default function LearnPage() {
     fetchCourse();
   }, [slug, lessonId, router]);
 
-  // Set video URL when lesson changes - use direct URL from Cloudinary
+  // Set video URL and fetch progress when lesson changes
   useEffect(() => {
     if (currentLesson) {
       setVideoUrl(currentLesson.videoUrl || null);
+
+      // Fetch saved progress to resume from last position
+      const fetchProgress = async () => {
+        try {
+          const response = await fetch(`/api/progress/lesson?lessonId=${currentLesson.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            // Resume from saved position if not completed (leave some buffer)
+            if (data.watchedSeconds && !data.completed && data.watchedSeconds > 5) {
+              setStartTime(data.watchedSeconds - 5); // Go back 5 seconds for context
+            } else {
+              setStartTime(0);
+            }
+          }
+        } catch {
+          // Silently fail - just start from beginning
+          setStartTime(0);
+        }
+      };
+
+      if (user) {
+        fetchProgress();
+      }
     }
-  }, [currentLesson]);
+  }, [currentLesson, user]);
 
   const handleLessonClick = (lessonId: string) => {
     if (!course) return;
@@ -193,6 +217,7 @@ export default function LearnPage() {
               src={videoUrl}
               title={currentLesson?.title}
               lessonId={currentLesson?.id}
+              startTime={startTime}
               onProgress={handleProgress}
               onComplete={handleComplete}
               onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
