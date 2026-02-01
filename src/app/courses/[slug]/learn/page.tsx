@@ -188,8 +188,25 @@ export default function LearnPage() {
 
   const canWatch = currentLesson?.isFreePreview || isSubscribed;
 
+  // DEBUG: Temporary debug info - remove after fixing
+  const debugInfo = {
+    userExists: !!user,
+    userRole: user?.role,
+    subscriptionStatus: user?.subscriptionStatus,
+    isSubscribed,
+    canWatch,
+    userLoading,
+  };
+  console.log("[LearnPage Debug]", debugInfo);
+
   return (
     <div className="min-h-screen bg-background">
+      {/* DEBUG BANNER - Remove after fixing */}
+      {process.env.NODE_ENV !== "production" || true ? (
+        <div className="bg-yellow-100 text-yellow-800 text-xs p-2 text-center">
+          Debug: role={user?.role || "null"} | sub={user?.subscriptionStatus || "null"} | isSubscribed={String(isSubscribed)} | canWatch={String(canWatch)}
+        </div>
+      ) : null}
       {/* Top bar */}
       <div className="border-b bg-card">
         <div className="flex items-center gap-4 px-4 py-3">
