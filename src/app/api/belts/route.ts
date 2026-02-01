@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // GET - get user's belts for all disciplines
 export async function GET() {
   try {

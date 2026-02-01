@@ -4,6 +4,8 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmail } from "@/lib/email";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   try {
     const { userId } = await auth();

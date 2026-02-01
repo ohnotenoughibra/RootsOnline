@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // GET - get all technique tags, optionally filtered by discipline
 export async function GET(request: Request) {
   try {

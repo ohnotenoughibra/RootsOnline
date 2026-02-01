@@ -17,7 +17,17 @@ export default function LearnPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   // Subscribe to user state to trigger re-render when user data loads
-  const { user, hasActiveSubscription, isLoading: userLoading } = useUserStore();
+  const { user, isLoading: userLoading } = useUserStore();
+
+  // Compute subscription status directly from user object for reactivity
+  const isSubscribed = Boolean(
+    user && (
+      user.role === "COACH" ||
+      user.role === "ADMIN" ||
+      user.subscriptionStatus === "ACTIVE" ||
+      user.subscriptionStatus === "TRIALING"
+    )
+  );
 
   const [course, setCourse] = useState<CourseWithModules | null>(null);
   const [currentLesson, setCurrentLesson] = useState<Lesson | null>(null);
@@ -58,41 +68,10 @@ export default function LearnPage() {
     fetchCourse();
   }, [slug, lessonId, router]);
 
-  // Fetch signed video URL when lesson changes
+  // Set video URL when lesson changes - use direct URL from Cloudinary
   useEffect(() => {
-    const fetchVideoUrl = async () => {
-      if (!currentLesson?.videoPublicId) {
-        setVideoUrl(currentLesson?.videoUrl || null);
-        return;
-      }
-
-      setVideoLoading(true);
-      try {
-        const response = await fetch("/api/video/sign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            lessonId: currentLesson.id,
-            publicId: currentLesson.videoPublicId,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to get video URL");
-        }
-
-        const data = await response.json();
-        setVideoUrl(data.url);
-      } catch (error) {
-        console.error("Error fetching video URL:", error);
-        setVideoUrl(null);
-      } finally {
-        setVideoLoading(false);
-      }
-    };
-
     if (currentLesson) {
-      fetchVideoUrl();
+      setVideoUrl(currentLesson.videoUrl || null);
     }
   }, [currentLesson]);
 
@@ -170,8 +149,6 @@ export default function LearnPage() {
     const nextLesson = allLessons[currentIndex + 1];
     return nextLesson && (nextLesson.isFreePreview || isSubscribed);
   };
-
-  const isSubscribed = hasActiveSubscription();
 
   if (loading || userLoading) {
     return (

@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 // GET - get user's activity for the last year (for calendar heatmap)
 export async function GET() {
   try {
