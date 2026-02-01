@@ -92,6 +92,51 @@ export interface Dictionary {
     streak: string;
     watchTime: string;
   };
+  learningPaths: {
+    title: string;
+    subtitle: string;
+    structuredLearning: string;
+    comingSoon: string;
+    coursesInPath: string;
+    weeks: string;
+    courses: string;
+    startPath: string;
+    viewPath: string;
+    yourProgress: string;
+    coursesCompleted: string;
+    beginner: string;
+    intermediate: string;
+    advanced: string;
+    optional: string;
+    locked: string;
+    unlock: string;
+    review: string;
+    continue: string;
+    start: string;
+  };
+  certificates: {
+    title: string;
+    subtitle: string;
+    noCertificates: string;
+    download: string;
+    share: string;
+    earnedOn: string;
+    certificateNumber: string;
+    completionCertificate: string;
+    congratulations: string;
+    verifyAt: string;
+  };
+  notifications: {
+    title: string;
+    enable: string;
+    disable: string;
+    newCourses: string;
+    feedback: string;
+    reminders: string;
+    marketing: string;
+    notSupported: string;
+    permissionDenied: string;
+  };
 }
 
 // English dictionary (default)
@@ -174,6 +219,51 @@ const en: Dictionary = {
     completed: "Completed",
     streak: "Day Streak",
     watchTime: "Watch Time",
+  },
+  learningPaths: {
+    title: "Learning Paths",
+    subtitle: "Follow curated paths designed by our expert coaches",
+    structuredLearning: "Structured Learning",
+    comingSoon: "Coming Soon",
+    coursesInPath: "Courses in This Path",
+    weeks: "weeks",
+    courses: "courses",
+    startPath: "Start This Path",
+    viewPath: "View Path",
+    yourProgress: "Your Progress",
+    coursesCompleted: "courses completed",
+    beginner: "Beginner",
+    intermediate: "Intermediate",
+    advanced: "Advanced",
+    optional: "Optional",
+    locked: "Locked",
+    unlock: "Unlock",
+    review: "Review",
+    continue: "Continue",
+    start: "Start",
+  },
+  certificates: {
+    title: "Your Certificates",
+    subtitle: "Achievements earned through your training",
+    noCertificates: "Complete a course to earn your first certificate",
+    download: "Download PDF",
+    share: "Share",
+    earnedOn: "Earned on",
+    certificateNumber: "Certificate Number",
+    completionCertificate: "Certificate of Completion",
+    congratulations: "Congratulations!",
+    verifyAt: "Verify this certificate at",
+  },
+  notifications: {
+    title: "Notification Settings",
+    enable: "Enable Notifications",
+    disable: "Disable Notifications",
+    newCourses: "New course announcements",
+    feedback: "Training feedback updates",
+    reminders: "Training reminders",
+    marketing: "Marketing and promotions",
+    notSupported: "Push notifications are not supported in this browser",
+    permissionDenied: "Notification permission was denied",
   },
 };
 
@@ -258,6 +348,51 @@ const de: Dictionary = {
     streak: "Tages-Streak",
     watchTime: "Lernzeit",
   },
+  learningPaths: {
+    title: "Lernpfade",
+    subtitle: "Folge kuratierten Pfaden, die von unseren Experten-Trainern erstellt wurden",
+    structuredLearning: "Strukturiertes Lernen",
+    comingSoon: "Demnächst verfügbar",
+    coursesInPath: "Kurse in diesem Pfad",
+    weeks: "Wochen",
+    courses: "Kurse",
+    startPath: "Pfad starten",
+    viewPath: "Pfad ansehen",
+    yourProgress: "Dein Fortschritt",
+    coursesCompleted: "Kurse abgeschlossen",
+    beginner: "Anfänger",
+    intermediate: "Fortgeschritten",
+    advanced: "Experte",
+    optional: "Optional",
+    locked: "Gesperrt",
+    unlock: "Freischalten",
+    review: "Wiederholen",
+    continue: "Fortsetzen",
+    start: "Starten",
+  },
+  certificates: {
+    title: "Deine Zertifikate",
+    subtitle: "Errungenschaften aus deinem Training",
+    noCertificates: "Schließe einen Kurs ab, um dein erstes Zertifikat zu erhalten",
+    download: "PDF herunterladen",
+    share: "Teilen",
+    earnedOn: "Erhalten am",
+    certificateNumber: "Zertifikatsnummer",
+    completionCertificate: "Abschlusszertifikat",
+    congratulations: "Herzlichen Glückwunsch!",
+    verifyAt: "Dieses Zertifikat verifizieren unter",
+  },
+  notifications: {
+    title: "Benachrichtigungseinstellungen",
+    enable: "Benachrichtigungen aktivieren",
+    disable: "Benachrichtigungen deaktivieren",
+    newCourses: "Neue Kurs-Ankündigungen",
+    feedback: "Training-Feedback Updates",
+    reminders: "Training-Erinnerungen",
+    marketing: "Marketing und Aktionen",
+    notSupported: "Push-Benachrichtigungen werden in diesem Browser nicht unterstützt",
+    permissionDenied: "Berechtigung für Benachrichtigungen wurde verweigert",
+  },
 };
 
 // Spanish dictionary
@@ -340,6 +475,51 @@ const es: Dictionary = {
     completed: "Completado",
     streak: "Racha de Días",
     watchTime: "Tiempo de Estudio",
+  },
+  learningPaths: {
+    title: "Rutas de Aprendizaje",
+    subtitle: "Sigue rutas diseñadas por nuestros entrenadores expertos",
+    structuredLearning: "Aprendizaje Estructurado",
+    comingSoon: "Próximamente",
+    coursesInPath: "Cursos en Esta Ruta",
+    weeks: "semanas",
+    courses: "cursos",
+    startPath: "Iniciar Ruta",
+    viewPath: "Ver Ruta",
+    yourProgress: "Tu Progreso",
+    coursesCompleted: "cursos completados",
+    beginner: "Principiante",
+    intermediate: "Intermedio",
+    advanced: "Avanzado",
+    optional: "Opcional",
+    locked: "Bloqueado",
+    unlock: "Desbloquear",
+    review: "Revisar",
+    continue: "Continuar",
+    start: "Empezar",
+  },
+  certificates: {
+    title: "Tus Certificados",
+    subtitle: "Logros obtenidos en tu entrenamiento",
+    noCertificates: "Completa un curso para obtener tu primer certificado",
+    download: "Descargar PDF",
+    share: "Compartir",
+    earnedOn: "Obtenido el",
+    certificateNumber: "Número de Certificado",
+    completionCertificate: "Certificado de Finalización",
+    congratulations: "¡Felicitaciones!",
+    verifyAt: "Verifica este certificado en",
+  },
+  notifications: {
+    title: "Configuración de Notificaciones",
+    enable: "Activar Notificaciones",
+    disable: "Desactivar Notificaciones",
+    newCourses: "Anuncios de nuevos cursos",
+    feedback: "Actualizaciones de feedback",
+    reminders: "Recordatorios de entrenamiento",
+    marketing: "Marketing y promociones",
+    notSupported: "Las notificaciones push no son compatibles con este navegador",
+    permissionDenied: "Se denegó el permiso de notificaciones",
   },
 };
 

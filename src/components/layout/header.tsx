@@ -28,6 +28,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useUserStore } from "@/store/user-store";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const navigation = [
   { name: "Courses", href: "/courses", icon: BookOpen },
@@ -76,7 +77,10 @@ export function Header() {
                     <Dumbbell className="h-6 w-6 text-primary" />
                     <span>ROA</span>
                   </span>
-                  <ThemeToggle />
+                  <div className="flex items-center gap-2">
+                    <LanguageSwitcher />
+                    <ThemeToggle />
+                  </div>
                 </SheetTitle>
               </SheetHeader>
 
@@ -205,6 +209,7 @@ export function Header() {
 
         {/* Desktop right section */}
         <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-x-4">
+          <LanguageSwitcher />
           <ThemeToggle />
           <SignedOut>
             <Link href="/sign-in">
