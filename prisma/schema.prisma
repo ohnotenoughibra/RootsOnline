@@ -798,6 +798,23 @@ model Discussion {
   @@index([lessonId])
 }
 
+// Multi-angle video links for lessons
+model VideoAngle {
+  id            String   @id @default(cuid())
+  lessonId      String
+  angleLabel    String   // "Main", "Overhead", "Detail", "Slow Motion", etc.
+  videoUrl      String
+  videoPublicId String?
+  videoDuration Int?
+  order         Int      @default(0)
+  isDefault     Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([lessonId])
+}
+
 // Replies to discussions
 model DiscussionReply {
   id            String     @id @default(cuid())

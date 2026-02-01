@@ -15,6 +15,7 @@ import {
   Play,
   HelpCircle,
   Tag,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -56,6 +57,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { QuizEditor } from "@/components/quiz/quiz-editor";
 import { LessonTags } from "@/components/technique/lesson-tags";
+import { AngleManager } from "@/components/video/angle-manager";
 
 interface Lesson {
   id: string;
@@ -129,6 +131,10 @@ export default function EditCoursePage() {
     lesson: Lesson;
   } | null>(null);
   const [tagsLesson, setTagsLesson] = useState<Lesson | null>(null);
+  const [anglesLesson, setAnglesLesson] = useState<{
+    moduleId: string;
+    lesson: Lesson;
+  } | null>(null);
 
   useEffect(() => {
     fetchCourse();
@@ -704,6 +710,19 @@ export default function EditCoursePage() {
                                     <Tag className="h-4 w-4 mr-1" />
                                     Tags
                                   </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setAnglesLesson({
+                                        moduleId: module.id,
+                                        lesson,
+                                      })
+                                    }
+                                  >
+                                    <Camera className="h-4 w-4 mr-1" />
+                                    Angles
+                                  </Button>
                                   <div className="flex items-center gap-2">
                                     <Switch
                                       checked={lesson.isFreePreview}
@@ -919,6 +938,18 @@ export default function EditCoursePage() {
             lessonId={tagsLesson.id}
             open={!!tagsLesson}
             onOpenChange={(open) => !open && setTagsLesson(null)}
+          />
+        )}
+
+        {/* Video Angles */}
+        {anglesLesson && (
+          <AngleManager
+            courseId={courseId}
+            moduleId={anglesLesson.moduleId}
+            lessonId={anglesLesson.lesson.id}
+            lessonTitle={anglesLesson.lesson.title}
+            open={!!anglesLesson}
+            onOpenChange={(open) => !open && setAnglesLesson(null)}
           />
         )}
       </div>

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { UniversalVideoPlayer } from "@/components/video/universal-video-player";
+import { MultiAnglePlayer } from "@/components/video/multi-angle-player";
 import { LockedVideo } from "@/components/video/locked-video";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
 import { QuizTaker } from "@/components/quiz/quiz-taker";
@@ -243,11 +243,11 @@ export default function LearnPage() {
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
-          ) : canWatch && videoUrl ? (
-            <UniversalVideoPlayer
-              src={videoUrl}
-              title={currentLesson?.title}
-              lessonId={currentLesson?.id}
+          ) : canWatch && currentLesson ? (
+            <MultiAnglePlayer
+              lessonId={currentLesson.id}
+              defaultVideoUrl={videoUrl || undefined}
+              title={currentLesson.title}
               onProgress={handleProgress}
               onComplete={handleComplete}
               onNextLesson={hasNextLesson() ? handleNextLesson : undefined}
