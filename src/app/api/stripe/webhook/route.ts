@@ -142,7 +142,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
     const planName = priceId === SUBSCRIPTION_PLANS.annual.priceId ? "Annual" : "Monthly";
     const amount = priceId === SUBSCRIPTION_PLANS.annual.priceId ? "€199/year" : "€19.99/month";
     const email = subscriptionConfirmedEmail({
-      firstName: user.firstName,
+      firstName: user.firstName || "there",
       plan: planName,
       amount,
       nextBillingDate: currentPeriodEnd.toLocaleDateString("en-US", {
@@ -179,7 +179,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Send cancellation email
   if (user.email) {
     const email = subscriptionCancelledEmail({
-      firstName: user.firstName,
+      firstName: user.firstName || "there",
       endDate: endDate.toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
@@ -243,7 +243,7 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice) {
         : undefined;
 
       const email = paymentFailedEmail({
-        firstName: user.firstName,
+        firstName: user.firstName || "there",
         amount,
         retryDate: nextAttempt,
       });
@@ -251,7 +251,7 @@ async function handleInvoiceFailed(invoice: Stripe.Invoice) {
     } else {
       // Subsequent failures - send retry email
       const email = paymentRetryEmail({
-        firstName: user.firstName,
+        firstName: user.firstName || "there",
         amount,
         attemptNumber: attemptCount,
         finalAttempt,
