@@ -27,6 +27,10 @@ export async function POST(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    if (!stripe) {
+      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
+    }
+
     // Get the course
     const course = await prisma.course.findUnique({
       where: { slug, status: "PUBLISHED" },
