@@ -8,7 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MultiAnglePlayer } from "@/components/video/multi-angle-player";
+import { UniversalVideoPlayer } from "@/components/video/universal-video-player";
 import { LockedVideo } from "@/components/video/locked-video";
 import { CourseCurriculum } from "@/components/course/course-curriculum";
 import { QuizTaker } from "@/components/quiz/quiz-taker";
@@ -56,6 +56,8 @@ export default function LearnPage() {
   const [videoLoading, setVideoLoading] = useState(false);
   const [startTime, setStartTime] = useState(0);
   const [hasPurchased, setHasPurchased] = useState(false);
+  const [lessonQuizzes, setLessonQuizzes] = useState<LessonQuiz[]>([]);
+  const [activeQuiz, setActiveQuiz] = useState<string | null>(null);
 
   const slug = params.slug as string;
   const lessonId = searchParams.get("lesson");
