@@ -1,11 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Play, Clock, BookOpen } from "lucide-react";
+import { ChevronLeft, Play, Clock, BookOpen, ArrowRight } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { hasActiveSubscription } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getDisciplineLabel, formatDuration } from "@/lib/utils";
 
@@ -83,32 +82,33 @@ export default async function TechniquePage({ params }: TechniquePageProps) {
   const courseGroups = Object.values(lessonsByCourse);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Link href="/techniques">
-            <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white mb-4">
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back to Techniques
-            </Button>
+    <div className="flex flex-col">
+      {/* Header */}
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <Link
+            href="/techniques"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+          >
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back to Techniques
           </Link>
 
-          <Badge variant={technique.discipline.toLowerCase() as "mma" | "kickboxing" | "grappling"} className="mb-4">
+          <p className="text-sm text-muted-foreground mb-2">
             {getDisciplineLabel(technique.discipline)}
-          </Badge>
+          </p>
 
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             {technique.name}
           </h1>
 
           {technique.description && (
-            <p className="mt-4 text-lg text-gray-300 max-w-2xl">
+            <p className="mt-4 text-lg text-muted-foreground">
               {technique.description}
             </p>
           )}
 
-          <div className="mt-6 flex items-center gap-4 text-sm text-gray-300">
+          <div className="mt-6 flex items-center gap-6 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Play className="h-4 w-4" />
               {lessons.length} lessons
@@ -119,56 +119,54 @@ export default async function TechniquePage({ params }: TechniquePageProps) {
             </span>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Content */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        {lessons.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-xl font-semibold mb-2">Coming Soon</h2>
+      <section className="border-t py-12">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          {lessons.length === 0 ? (
+            <div className="text-center py-12 border rounded-xl">
+              <BookOpen className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
+              <h2 className="text-lg font-semibold mb-2">Coming Soon</h2>
               <p className="text-muted-foreground">
                 We&apos;re working on adding lessons for this technique.
-                Check back soon!
               </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-8">
-            {courseGroups.map(({ course, lessons }) => (
-              <div key={course.id}>
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-xl font-bold">{course.title}</h2>
-                    <p className="text-sm text-muted-foreground">
-                      by {course.coach.firstName} {course.coach.lastName}
-                    </p>
+            </div>
+          ) : (
+            <div className="space-y-12">
+              {courseGroups.map(({ course, lessons }) => (
+                <div key={course.id}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h2 className="text-lg font-semibold">{course.title}</h2>
+                      <p className="text-sm text-muted-foreground">
+                        by {course.coach.firstName} {course.coach.lastName}
+                      </p>
+                    </div>
+                    <Link href={`/courses/${course.slug}`}>
+                      <Button variant="outline" size="sm">
+                        View Course
+                      </Button>
+                    </Link>
                   </div>
-                  <Link href={`/courses/${course.slug}`}>
-                    <Button variant="outline" size="sm">
-                      View Course
-                    </Button>
-                  </Link>
-                </div>
 
-                <div className="grid gap-3">
-                  {lessons.map((lesson) => {
-                    const canWatch = lesson.isFreePreview || isSubscribed;
+                  <div className="space-y-2">
+                    {lessons.map((lesson) => {
+                      const canWatch = lesson.isFreePreview || isSubscribed;
 
-                    return (
-                      <Link
-                        key={lesson.id}
-                        href={canWatch ? `/courses/${course.slug}/learn?lesson=${lesson.id}` : `/courses/${course.slug}`}
-                      >
-                        <Card className="hover:shadow-md transition-shadow">
-                          <CardContent className="py-4">
+                      return (
+                        <Link
+                          key={lesson.id}
+                          href={canWatch ? `/courses/${course.slug}/learn?lesson=${lesson.id}` : `/courses/${course.slug}`}
+                          className="block"
+                        >
+                          <div className="p-4 rounded-lg border hover:border-foreground/50 transition-colors">
                             <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${canWatch ? "bg-primary/10" : "bg-muted"}`}>
-                                  <Play className={`h-4 w-4 ${canWatch ? "text-primary" : "text-muted-foreground"}`} />
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className={`p-2 rounded-lg ${canWatch ? "bg-foreground/10" : "bg-muted"}`}>
+                                  <Play className={`h-4 w-4 ${canWatch ? "" : "text-muted-foreground"}`} />
                                 </div>
-                                <div>
+                                <div className="flex-1 min-w-0">
                                   <h3 className="font-medium">{lesson.title}</h3>
                                   {lesson.description && (
                                     <p className="text-sm text-muted-foreground line-clamp-1">
@@ -177,9 +175,9 @@ export default async function TechniquePage({ params }: TechniquePageProps) {
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-3 ml-4">
                                 {lesson.isFreePreview && (
-                                  <Badge variant="secondary">Free</Badge>
+                                  <span className="text-xs px-2 py-1 rounded border">Free</span>
                                 )}
                                 {lesson.videoDuration && (
                                   <span className="text-sm text-muted-foreground flex items-center gap-1">
@@ -188,34 +186,37 @@ export default async function TechniquePage({ params }: TechniquePageProps) {
                                   </span>
                                 )}
                                 {!canWatch && (
-                                  <Badge variant="outline">Premium</Badge>
+                                  <span className="text-xs px-2 py-1 rounded border border-dashed">Premium</span>
                                 )}
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    );
-                  })}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {/* Subscribe CTA for non-subscribers */}
-        {!isSubscribed && lessons.length > 0 && (
-          <div className="mt-12 rounded-xl border bg-card p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Unlock All Lessons</h2>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              Subscribe to access all {lessons.length} lessons covering {technique.name} and our entire technique library.
-            </p>
-            <Link href="/pricing">
-              <Button size="lg">View Plans</Button>
-            </Link>
-          </div>
-        )}
-      </div>
+          {/* Subscribe CTA for non-subscribers */}
+          {!isSubscribed && lessons.length > 0 && (
+            <div className="mt-16 rounded-xl border p-8 text-center">
+              <h2 className="text-xl font-bold mb-2">Unlock All Lessons</h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Subscribe to access all {lessons.length} lessons covering {technique.name} and our entire technique library.
+              </p>
+              <Link href="/pricing">
+                <Button>
+                  View Plans
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
