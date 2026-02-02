@@ -51,8 +51,8 @@ const faqCategories = [
         a: "Yes! Many courses are available for one-time purchase, giving you permanent access to that specific course. This is great if you're interested in a particular topic or instructor. Courses with individual pricing show the price on their detail page.",
       },
       {
-        q: "Is there a free trial?",
-        a: "Yes, we offer free preview lessons on most courses so you can experience our teaching style before committing. Additionally, new members can explore our platform with a trial period. Check our current offers on the pricing page.",
+        q: "Can I try before I subscribe?",
+        a: "Yes! We offer free preview lessons on most courses so you can experience our teaching style and content quality before committing. Look for lessons marked 'Free' on any course page — these are full lessons, not just trailers.",
       },
       {
         q: "How do I cancel my subscription?",

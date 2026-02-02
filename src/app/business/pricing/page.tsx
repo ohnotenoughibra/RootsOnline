@@ -40,7 +40,7 @@ const plans = [
       "Private gym owners community",
       "Priority Q&A responses",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
     href: "/pricing?plan=business-pro",
     popular: true,
   },

@@ -75,7 +75,6 @@ export default function PricingPage() {
         body: JSON.stringify({
           plan: planId,
           promoCode: promoData?.code,
-          withTrial: true,
         }),
       });
 
@@ -247,7 +246,7 @@ export default function PricingPage() {
           </div>
 
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Secure payment via Stripe. 7-day free trial included.
+            Secure payment via Stripe. Browse free preview lessons before subscribing.
           </p>
         </div>
       </section>

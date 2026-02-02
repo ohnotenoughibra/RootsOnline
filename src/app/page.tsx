@@ -288,11 +288,11 @@ export default function HomePage() {
             </ul>
             <Link href="/pricing" className="block mt-8">
               <Button size="lg" className="w-full">
-                Start Free Trial
+                Get Started
               </Button>
             </Link>
             <p className="mt-4 text-xs text-center text-muted-foreground">
-              7 days free. We'll remind you before we charge.
+              Free preview lessons available. Try before you subscribe.
             </p>
           </Card>
         </div>
