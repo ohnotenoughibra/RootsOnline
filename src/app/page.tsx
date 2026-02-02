@@ -139,7 +139,7 @@ export default function HomePage() {
               </div>
 
               {/* Training disciplines */}
-              {"disciplines" in selected && (
+              {"disciplines" in selected && selected.disciplines && (
                 <div className="grid gap-3 mt-4">
                   {selected.disciplines.map((discipline) => (
                     <Link
