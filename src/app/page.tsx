@@ -160,7 +160,7 @@ export default function HomePage() {
               )}
 
               {/* Business topics */}
-              {"topics" in selected && (
+              {"topics" in selected && selected.topics && (
                 <div className="grid sm:grid-cols-2 gap-2 mt-4">
                   {selected.topics.map((topic) => (
                     <div
@@ -175,7 +175,7 @@ export default function HomePage() {
               )}
 
               {/* Community features */}
-              {"features" in selected && (
+              {"features" in selected && selected.features && (
                 <div className="grid sm:grid-cols-2 gap-2 mt-4">
                   {selected.features.map((feature) => (
                     <div
