@@ -14,6 +14,9 @@ import {
   Upload,
   Play,
   Euro,
+  HelpCircle,
+  Tag,
+  Camera,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -88,6 +91,7 @@ interface Course {
   status: string;
   coverImage: string | null;
   price: number | null;
+  coachId: string;
   modules: Module[];
 }
 

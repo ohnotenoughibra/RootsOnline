@@ -102,6 +102,7 @@ export async function PATCH(
       status,
       coverImage,
       price,
+      coachId: newCoachId,
     } = body;
 
     // Build update data
