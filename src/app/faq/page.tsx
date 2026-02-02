@@ -12,9 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "FAQ | Roots Collective",
+  title: "FAQ | ROA",
   description:
-    "Frequently asked questions about Roots Collective - your online martial arts training platform.",
+    "Frequently asked questions about ROA - your online martial arts training platform.",
 };
 
 const faqCategories = [
@@ -22,8 +22,8 @@ const faqCategories = [
     title: "Getting Started",
     questions: [
       {
-        q: "What is Roots Collective?",
-        a: "Roots Collective is a comprehensive online martial arts education platform offering high-quality courses in MMA, Kickboxing, Grappling/BJJ, and gym business management. We bring world-class instruction directly to you, whether you're training at home, supplementing your gym training, or looking to become a certified instructor.",
+        q: "What is ROA?",
+        a: "ROA (Roots Online Academy) is a comprehensive online martial arts education platform offering high-quality courses in MMA, Kickboxing, Grappling/BJJ, and gym business management. We bring world-class instruction directly to you, whether you're training at home, supplementing your gym training, or looking to become a certified instructor.",
       },
       {
         q: "Who are the instructors?",
@@ -115,7 +115,7 @@ const faqCategories = [
     questions: [
       {
         q: "What devices can I use to access courses?",
-        a: "Roots Collective works on any device with a modern web browser - computers, tablets, and smartphones. Our responsive design ensures a great experience whether you're watching on a big screen or reviewing techniques on your phone at the gym.",
+        a: "ROA works on any device with a modern web browser - computers, tablets, and smartphones. Our responsive design ensures a great experience whether you're watching on a big screen or reviewing techniques on your phone at the gym.",
       },
       {
         q: "How do I track my progress?",
@@ -173,7 +173,7 @@ const faqCategories = [
       },
       {
         q: "Do you have an affiliate or referral program?",
-        a: "Yes! Our referral program rewards you for introducing new members to Roots Collective. Share your unique referral link and earn credits toward your subscription. Details are available in your account settings.",
+        a: "Yes! Our referral program rewards you for introducing new members to ROA. Share your unique referral link and earn credits toward your subscription. Details are available in your account settings.",
       },
     ],
   },
@@ -190,7 +190,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about Roots Collective, our courses,
+            Find answers to common questions about ROA, our courses,
             subscriptions, and more.
           </p>
         </div>

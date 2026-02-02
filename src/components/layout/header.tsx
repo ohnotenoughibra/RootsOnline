@@ -14,8 +14,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 const navigation = [
   { name: "Courses", href: "/courses" },
   { name: "Techniques", href: "/techniques" },
+  { name: "Business", href: "/business" },
   { name: "Pricing", href: "/pricing" },
-  { name: "About", href: "/about" },
 ];
 
 export function Header() {
@@ -30,7 +30,7 @@ export function Header() {
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold tracking-tight">
-          Roots
+          ROA
         </Link>
 
         {/* Desktop navigation */}
