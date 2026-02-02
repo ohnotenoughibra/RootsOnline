@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 
 export const metadata: Metadata = {
-  title: "Business Q&A | Roots Collective",
+  title: "Business Q&A | ROA",
   description: "Ask questions and get answers from experienced gym owners and martial arts business experts.",
 };
 

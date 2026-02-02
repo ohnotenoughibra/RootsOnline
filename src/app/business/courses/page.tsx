@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
-  title: "Business Courses | Roots Collective",
+  title: "Business Courses | ROA",
   description: "Learn how to run a successful martial arts gym with our business courses.",
 };
 

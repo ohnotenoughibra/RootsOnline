@@ -58,7 +58,7 @@ export async function generateMetadata({
 
   return {
     title: `${name} - Instructor`,
-    description: `Learn martial arts from ${name} at Roots Online Academy. Browse their courses and start training today.`,
+    description: `Learn martial arts from ${name} at ROA. Browse their courses and start training today.`,
     openGraph: {
       title: `${name} | ROA Instructor`,
       description: `Learn martial arts from ${name}`,
@@ -109,7 +109,7 @@ export default async function InstructorPage({ params }: InstructorPageProps) {
 
           <div className="text-center md:text-left flex-1">
             <h1 className="text-3xl font-bold">{name}</h1>
-            <p className="text-muted-foreground mt-1">Instructor at Roots Online Academy</p>
+            <p className="text-muted-foreground mt-1">Instructor at ROA</p>
 
             {/* Disciplines */}
             <div className="flex flex-wrap gap-2 mt-4 justify-center md:justify-start">

@@ -17,7 +17,7 @@ import {
 import { getDisciplineLabel } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Instructor Certifications | Roots Collective",
+  title: "Instructor Certifications | ROA",
   description: "Become a certified martial arts instructor through our comprehensive certification programs.",
 };
 

@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
-  title: "About Us",
+  title: "About Us | ROA",
   description:
-    "Roots Collective - a group of friends growing the martial arts community together since 2023.",
+    "ROA - a group of friends growing the martial arts community together since 2023.",
   openGraph: {
-    title: "About | Roots Collective",
+    title: "About | ROA",
     description:
       "We're a group of friends with a shared passion for martial arts. Our mission is simple: grow together.",
     url: `${siteConfig.url}/about`,
