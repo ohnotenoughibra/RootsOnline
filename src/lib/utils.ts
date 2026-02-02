@@ -47,6 +47,7 @@ export function getDisciplineLabel(discipline: string): string {
     MMA: "MMA",
     KICKBOXING: "Kickboxing",
     GRAPPLING: "Grappling",
+    BUSINESS: "Business",
   };
   return labels[discipline] || discipline;
 }
@@ -56,6 +57,7 @@ export function getDisciplineColor(discipline: string): string {
     MMA: "bg-red-500",
     KICKBOXING: "bg-orange-500",
     GRAPPLING: "bg-blue-500",
+    BUSINESS: "bg-emerald-500",
   };
   return colors[discipline] || "bg-gray-500";
 }

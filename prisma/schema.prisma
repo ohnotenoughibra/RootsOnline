@@ -31,6 +31,7 @@ enum Discipline {
   MMA
   KICKBOXING
   GRAPPLING
+  BUSINESS    // Gym business education
 }
 
 // Course status
@@ -114,6 +115,10 @@ model User {
 
   // Instructor certification applications
   certificationApplications CertificationApplication[]
+
+  // Business Academy Q&A
+  businessQuestions     BusinessQuestion[] @relation("BusinessQuestionAuthor")
+  businessAnswers       BusinessAnswer[]   @relation("BusinessAnswerAuthor")
 
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
@@ -885,4 +890,94 @@ model CertificationApplication {
   @@index([userId])
   @@index([certificationId])
   @@index([status])
+}
+
+// Business Academy Q&A
+enum BusinessCategory {
+  GYM_OPERATIONS      // Day-to-day gym management
+  MARKETING           // Marketing and member acquisition
+  EVENTS              // Running competitions and events
+  COMMUNITY           // Building community and retention
+  FINANCE             // Financial management and pricing
+  LEGAL               // Legal, insurance, waivers
+  STAFFING            // Hiring, training instructors
+  FACILITIES          // Equipment, space, setup
+  TECHNOLOGY          // Software, apps, systems
+  GROWTH              // Scaling and expansion
+}
+
+model BusinessQuestion {
+  id              String            @id @default(cuid())
+
+  // Author
+  userId          String
+  user            User              @relation("BusinessQuestionAuthor", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Question details
+  title           String
+  content         String            @db.Text
+  category        BusinessCategory
+
+  // Status
+  isAnswered      Boolean           @default(false)
+  isPinned        Boolean           @default(false)
+  viewCount       Int               @default(0)
+
+  // Relations
+  answers         BusinessAnswer[]
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([category])
+  @@index([isAnswered])
+}
+
+model BusinessAnswer {
+  id              String            @id @default(cuid())
+
+  // Author
+  userId          String
+  user            User              @relation("BusinessAnswerAuthor", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Question
+  questionId      String
+  question        BusinessQuestion  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Answer details
+  content         String            @db.Text
+  isAccepted      Boolean           @default(false)
+  upvotes         Int               @default(0)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([questionId])
+}
+
+// Business Resources (templates, checklists, guides)
+model BusinessResource {
+  id              String            @id @default(cuid())
+
+  title           String
+  description     String            @db.Text
+  category        BusinessCategory
+
+  // Resource type
+  resourceType    String            // TEMPLATE, CHECKLIST, GUIDE, SPREADSHEET, VIDEO
+  fileUrl         String?           // For downloadable files
+  content         String?           @db.Text // For inline content
+
+  // Access control
+  isFree          Boolean           @default(false)
+
+  downloadCount   Int               @default(0)
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([category])
+  @@index([resourceType])
 }

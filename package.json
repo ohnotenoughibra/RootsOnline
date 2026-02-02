@@ -15,7 +15,8 @@
     "seed:catalog": "tsx prisma/seed-full-catalog.ts",
     "seed:achievements": "tsx prisma/seed-achievements.ts",
     "seed:paths": "tsx prisma/seed-learning-paths.ts",
-    "seed:all": "npm run seed:catalog && npm run seed:achievements && npm run seed:paths"
+    "seed:business": "tsx prisma/seed-business.ts",
+    "seed:all": "npm run seed:catalog && npm run seed:achievements && npm run seed:paths && npm run seed:business"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
