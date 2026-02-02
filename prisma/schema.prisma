@@ -981,3 +981,26 @@ model BusinessResource {
   @@index([category])
   @@index([resourceType])
 }
+
+// Business Consultation Requests
+model ConsultationRequest {
+  id              String            @id @default(cuid())
+
+  name            String
+  email           String
+  gymName         String
+  phone           String?
+  message         String            @db.Text
+
+  // Status tracking
+  status          String            @default("PENDING") // PENDING, CONTACTED, SCHEDULED, COMPLETED, DECLINED
+
+  // Admin notes
+  notes           String?           @db.Text
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status])
+  @@index([email])
+}
