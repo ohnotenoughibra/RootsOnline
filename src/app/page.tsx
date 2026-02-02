@@ -139,7 +139,7 @@ export default function HomePage() {
               </div>
 
               {/* Training disciplines */}
-              {"disciplines" in selected && (
+              {"disciplines" in selected && selected.disciplines && (
                 <div className="grid gap-3 mt-4">
                   {selected.disciplines.map((discipline) => (
                     <Link
@@ -160,7 +160,7 @@ export default function HomePage() {
               )}
 
               {/* Business topics */}
-              {"topics" in selected && (
+              {"topics" in selected && selected.topics && (
                 <div className="grid sm:grid-cols-2 gap-2 mt-4">
                   {selected.topics.map((topic) => (
                     <div
@@ -175,7 +175,7 @@ export default function HomePage() {
               )}
 
               {/* Community features */}
-              {"features" in selected && (
+              {"features" in selected && selected.features && (
                 <div className="grid sm:grid-cols-2 gap-2 mt-4">
                   {selected.features.map((feature) => (
                     <div
@@ -288,11 +288,11 @@ export default function HomePage() {
             </ul>
             <Link href="/pricing" className="block mt-8">
               <Button size="lg" className="w-full">
-                Start Free Trial
+                Get Started
               </Button>
             </Link>
             <p className="mt-4 text-xs text-center text-muted-foreground">
-              7 days free. We'll remind you before we charge.
+              Free preview lessons available. Try before you subscribe.
             </p>
           </Card>
         </div>

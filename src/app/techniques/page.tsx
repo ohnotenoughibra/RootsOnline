@@ -2,20 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Filter, ChevronRight, Play, BookOpen } from "lucide-react";
+import { Search, ChevronRight, Play, BookOpen } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getDisciplineLabel } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface TechniqueTag {
   id: string;
@@ -138,156 +132,140 @@ export default function TechniquesPage() {
     KICKBOXING: techniques.filter(t => t.discipline === "KICKBOXING").length,
   };
 
+  const disciplines = [
+    { id: "all", name: "All", count: techniques.length },
+    { id: "GRAPPLING", name: "Grappling", count: disciplineStats.GRAPPLING },
+    { id: "MMA", name: "MMA", count: disciplineStats.MMA },
+    { id: "KICKBOXING", name: "Kickboxing", count: disciplineStats.KICKBOXING },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col">
+      {/* Header */}
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
             Technique Library
           </h1>
-          <p className="mt-4 text-lg text-gray-300 max-w-2xl">
+          <p className="mt-4 text-muted-foreground">
             Browse our complete library of martial arts techniques. Find specific moves,
             explore positions, and discover related content.
           </p>
-
-          {/* Discipline Stats */}
-          <div className="mt-8 flex flex-wrap gap-4">
-            <button
-              onClick={() => setSelectedDiscipline("GRAPPLING")}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
-                selectedDiscipline === "GRAPPLING"
-                  ? "bg-white text-black border-white"
-                  : "border-gray-600 text-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Grappling ({disciplineStats.GRAPPLING})
-            </button>
-            <button
-              onClick={() => setSelectedDiscipline("MMA")}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
-                selectedDiscipline === "MMA"
-                  ? "bg-white text-black border-white"
-                  : "border-gray-600 text-gray-300 hover:border-gray-400"
-              }`}
-            >
-              MMA ({disciplineStats.MMA})
-            </button>
-            <button
-              onClick={() => setSelectedDiscipline("KICKBOXING")}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
-                selectedDiscipline === "KICKBOXING"
-                  ? "bg-white text-black border-white"
-                  : "border-gray-600 text-gray-300 hover:border-gray-400"
-              }`}
-            >
-              Kickboxing ({disciplineStats.KICKBOXING})
-            </button>
-            <button
-              onClick={() => setSelectedDiscipline("all")}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
-                selectedDiscipline === "all"
-                  ? "bg-white text-black border-white"
-                  : "border-gray-600 text-gray-300 hover:border-gray-400"
-              }`}
-            >
-              All ({techniques.length})
-            </button>
-          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Search and Filters */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search techniques..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full" />
-          </div>
-        ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Categories List */}
-            <div className="lg:col-span-2 space-y-8">
-              {categories.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No techniques found matching your search.
-                </div>
-              ) : (
-                categories.map((category) => (
-                  <div key={category.name}>
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      {category.name}
-                      <Badge variant="secondary" className="ml-2">
-                        {category.techniques.length}
-                      </Badge>
-                    </h2>
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      {category.techniques.map((tech) => (
-                        <button
-                          key={tech.id}
-                          onClick={() => setSelectedTechnique(tech)}
-                          className={`text-left p-4 rounded-lg border transition-all hover:shadow-md ${
-                            selectedTechnique?.id === tech.id
-                              ? "border-primary bg-primary/5"
-                              : "border-border hover:border-primary/50"
-                          }`}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-medium">{tech.name}</h3>
-                              {tech.description && (
-                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                                  {tech.description}
-                                </p>
-                              )}
-                            </div>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
-                          </div>
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge variant={tech.discipline.toLowerCase() as "mma" | "kickboxing" | "grappling"}>
-                              {getDisciplineLabel(tech.discipline)}
-                            </Badge>
-                            {tech._count.lessons > 0 && (
-                              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Play className="h-3 w-3" />
-                                {tech._count.lessons} lessons
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))
-              )}
+      {/* Filters */}
+      <section className="border-t py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-6">
+            {/* Discipline filters */}
+            <div className="flex flex-wrap gap-2">
+              {disciplines.map((discipline) => (
+                <button
+                  key={discipline.id}
+                  onClick={() => setSelectedDiscipline(discipline.id)}
+                  className={cn(
+                    "px-4 py-2 rounded-lg border text-sm font-medium transition-colors",
+                    selectedDiscipline === discipline.id
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border hover:border-foreground/50"
+                  )}
+                >
+                  {discipline.name} ({discipline.count})
+                </button>
+              ))}
             </div>
 
-            {/* Selected Technique Detail */}
-            <div className="lg:col-span-1">
-              <div className="sticky top-24">
-                {selectedTechnique ? (
-                  <Card>
-                    <CardHeader>
-                      <Badge variant={selectedTechnique.discipline.toLowerCase() as "mma" | "kickboxing" | "grappling"} className="w-fit mb-2">
+            {/* Search */}
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search techniques..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="border-t py-12">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-2 border-foreground border-t-transparent rounded-full" />
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-12">
+              {/* Categories List */}
+              <div className="lg:col-span-2 space-y-12">
+                {categories.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No techniques found matching your search.
+                  </div>
+                ) : (
+                  categories.map((category) => (
+                    <div key={category.name}>
+                      <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        {category.name}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          ({category.techniques.length})
+                        </span>
+                      </h2>
+                      <div className="space-y-2">
+                        {category.techniques.map((tech) => (
+                          <button
+                            key={tech.id}
+                            onClick={() => setSelectedTechnique(tech)}
+                            className={cn(
+                              "w-full text-left p-4 rounded-lg border transition-all",
+                              selectedTechnique?.id === tech.id
+                                ? "border-foreground bg-muted"
+                                : "border-border hover:border-foreground/50"
+                            )}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium">{tech.name}</h3>
+                                {tech.description && (
+                                  <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                    {tech.description}
+                                  </p>
+                                )}
+                                <div className="mt-2 flex items-center gap-3 text-sm text-muted-foreground">
+                                  <span>{getDisciplineLabel(tech.discipline)}</span>
+                                  {tech._count.lessons > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <Play className="h-3 w-3" />
+                                      {tech._count.lessons} lessons
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-4" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Selected Technique Detail */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-24">
+                  {selectedTechnique ? (
+                    <div className="rounded-xl border p-6">
+                      <p className="text-sm text-muted-foreground mb-2">
                         {getDisciplineLabel(selectedTechnique.discipline)}
-                      </Badge>
-                      <CardTitle>{selectedTechnique.name}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                      </p>
+                      <h3 className="text-xl font-bold mb-3">{selectedTechnique.name}</h3>
+
                       {selectedTechnique.description && (
-                        <p className="text-muted-foreground mb-4">
+                        <p className="text-muted-foreground mb-6">
                           {selectedTechnique.description}
                         </p>
                       )}
@@ -301,31 +279,28 @@ export default function TechniquesPage() {
                         {selectedTechnique._count.lessons > 0 ? (
                           <Link href={`/techniques/${selectedTechnique.slug}`}>
                             <Button className="w-full">
-                              <Play className="h-4 w-4 mr-2" />
                               View Lessons
                             </Button>
                           </Link>
                         ) : (
-                          <Button className="w-full" disabled>
+                          <Button className="w-full" disabled variant="outline">
                             Coming Soon
                           </Button>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card>
-                    <CardContent className="py-12 text-center text-muted-foreground">
-                      <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border p-6 text-center text-muted-foreground">
+                      <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-50" />
                       <p>Select a technique to see details</p>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

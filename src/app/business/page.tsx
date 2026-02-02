@@ -160,6 +160,12 @@ export default async function BusinessAcademyPage() {
                 Browse Courses
               </Button>
             </Link>
+            <Link href="/business/pricing">
+              <Button size="lg" variant="outline">
+                <DollarSign className="h-5 w-5 mr-2" />
+                View Pricing
+              </Button>
+            </Link>
             <Link href="/business/qa">
               <Button size="lg" variant="outline">
                 <MessageSquare className="h-5 w-5 mr-2" />
